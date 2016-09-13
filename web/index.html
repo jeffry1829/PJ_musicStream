@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>PJ_musicStream</title>
+	<link rel="stylesheet" href="//cdn.rawgit.com/TeaMeow/TocasUI/master/dist/tocas.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script>
+		var domain = 'petjelinux.ddns.net';
+	</script>
+	<script>
+		$.ajax({
+			url: domain+'/getList',
+			method: 'POST',
+			dataType: 'json',
+			success: function(res){
+				$.each(res, function(index, value){
+					$('#s-list').append(' \
+						<div class="ts list"> \
+							<a class="item" id="s-list-item"> \
+								<div class="header">'+value.s_id+' '+value.s_name+'</div> \
+								'+value.s_t+'sec \
+							</a> \
+						</div> \
+					');
+				});
+			},
+			error: function(xhr){
+				console.log(xhr);
+			}
+		});
+		
+		$.ajax({
+			url: domain+'/getCurrent',
+			method: 'POST',
+			dataType: 'json',
+			success: function(res){
+				if(!res['s_id']){
+					console.log('songs are not ready yet');
+					return;
+				}else{
+					$('#player').attr('src', res.s_url);
+					$('#player')[0].currentTime = res.now_Len;
+					
+					$('#s-title').text(res.s_name);
+					$('#s-artist').text(res.s_description.artist);
+					$('#s-album').text(res.s_description.album);
+					$('#s-length').text(res.s_t);
+				}
+			},
+			error: function(xhr){
+				console.log(xhr);
+			}
+		});
+		
+		setInterval(function(){
+			$.ajax({
+				url: domain+'/getCurrent',
+				method: 'POST',
+				dataType: 'json',
+				success: function(res){
+					if(!res['s_id']){
+						console.log('songs are not ready yet');
+						return;
+					}else{
+						var player_t = $('#player')[0].currentTime;
+						if(Math.abs(player_t - res.now_Len) > 5){
+							$('#player')[0].currentTime = res.now_Len;
+						}
+					}
+				},
+				error: function(xhr){
+					console.log(xhr);
+				}
+			});
+		},5000);
+		
+		$('#player').click(function(){
+			window.location.reload();
+		});
+		
+		$('#s-list-item').click(function(){
+			$.ajax({
+				url: domain+'/setCurrent',
+				dataType: 'json',
+				method: 'POST',
+				data: {
+					s_id: parseInt($('#s-list-item').val().split(' ')[0]),
+					start_time: 0 //There's no way to set yet
+				},
+				success: function(res){
+					
+				},
+				error: function(xhr){
+					console.log(xhr);
+				}
+			});
+			window.location.reload();
+		});
+	</script>
+</head>
+<body>
+	<div class="ts doubling grid">
+		<div class="sixteen wide column">
+			<video id="player"></video>
+		</div>
+		<div class="twelve wide column">
+			<div class="ts very narrow container segment">
+				Title:<div id="s-title"></div>
+				Artist:<div id="s-artist"></div>
+				Album:<div id="s-album"></div>
+				Length:<div id="s-length"></div>
+			</div>
+		</div>
+		<div class="four wide column" id="s-list">
+			<!--
+			<div class="ts list">
+				<a class="item" id="s-list-item">
+					<div class="header">-- Id --SPACE-- Title --</div>
+					-- Length --
+				</a>
+			</div>
+			-->
+		</div>
+	</div>
+</body>
+</html>
