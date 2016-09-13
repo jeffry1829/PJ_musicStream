@@ -13,9 +13,9 @@
   "author": "petjelinux",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jeffry1829/PJ_MusicStreamc/issues"
+    "url": "https://github.com/jeffry1829/PJ_musicStream/issues"
   },
-  "homepage": "https://github.com/jeffry1829/PJ_MusicStreamc#readme",
+  "homepage": "https://github.com/jeffry1829/PJ_musicStream#readme",
   "dependencies": {
     "async": "^2.0.1",
     "express": "^4.14.0",
