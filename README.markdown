@@ -1,2 +1,4 @@
 ##PJ\_musicStream  
-remain empty
+#usage  
+node index.js to run.  
+deploied at port 3000
