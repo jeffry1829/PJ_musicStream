@@ -16,6 +16,9 @@ var SongList={};
 var tmp_s_no=0;
 START();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+	extended: true
+}));
 app.use(express.static(__dirname+'/web'));
 app.use('/songs',express.static(songpath));
 app.listen(3000);
@@ -26,6 +29,9 @@ app.post('/getCurrent',function(req, res){
 	res.json(CurrentSong);
 });
 app.post('/setCurrent',function(req, res){
+	console.log('Router /setCurrent => req.body');
+	console.dir(req.body);
+	
 	var s_id = req.body.s_id;
 	var start_time = req.body.start_time;
 	setCurrent(s_id,start_time);
@@ -37,10 +43,13 @@ app.post('/getList',function(req, res){
 function setCurrent(s_id, start_time){
 	console.log('setCurrent => SongList');
 	console.dir(SongList);
+	console.log('setCurrent => s_id');
+	console.log(s_id);
 	
-	if(!s_id){
+	if(!s_id && s_id !== 0){
 		s_id=0;
 	}
+	
 	CurrentSong = Object.assign(CurrentSong, SongList[s_id]);
 	CurrentSong.now_Len = 0;
 	delete CurrentSong['s_path'];

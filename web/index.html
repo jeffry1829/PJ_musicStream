@@ -19,15 +19,15 @@
 				console.log(Number($(this)[0].innerText.split(' ')[0]))
 				
 				$.ajax({
+					type: 'POST',
 					url: domain+'/setCurrent',
 					dataType: 'json',
-					method: 'POST',
 					data: {
 						s_id: Number($(this)[0].innerText.split(' ')[0]),
 						start_time: 0 //There's no way to set yet
 					},
 					success: function(res){
-						
+						// doesn't matter
 					},
 					error: function(xhr){
 						console.log(xhr);
@@ -36,8 +36,8 @@
 				window.location.reload();
 			}
 			$.ajax({
+				type: 'POST',
 				url: domain+'/getList',
-				method: 'POST',
 				dataType: 'json',
 				success: function(res){
 					$.each(res, function(index, value){
@@ -58,8 +58,8 @@
 			});
 			
 			$.ajax({
+				type: 'POST',
 				url: domain+'/getCurrent',
-				method: 'POST',
 				dataType: 'json',
 				success: function(res){
 					console.log('/getCurrent => res');
@@ -87,8 +87,8 @@
 			
 			setInterval(function(){
 				$.ajax({
+					type: 'POST',
 					url: domain+'/getCurrent',
-					method: 'POST',
 					dataType: 'json',
 					success: function(res){
 						console.log('Interval: check now len every 5sec => now_Len: '+res['now_Len'])
@@ -117,7 +117,7 @@
 <body>
 	<div class="ts doubling grid">
 		<div class="sixteen wide column">
-			<video id="player"></video>
+			<video controls id="player"></video>
 		</div>
 		<div class="twelve wide column">
 			<div class="ts very narrow container segment">
