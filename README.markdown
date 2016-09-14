@@ -7,3 +7,4 @@ that's your song folder
 put songs into it  
 and edit /web/lib/config.js 's domain name as well  
 Remember to add "http://"  
+For instance: http://example.com:3000
