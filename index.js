@@ -70,7 +70,7 @@ function s_reload(this_f_path){
 								s_path: file,
 								s_name: tags.title, // why is there a "title" tag?!, it's not mentioned in the document!
 								s_id: tmp_s_no++,
-								s_url: '/songs/'+path.basename(file),
+								s_url: '/songs/'+path.relative(songpath,file),
 								s_t: duration,
 								s_description: {
 									artist: tags.artist,
