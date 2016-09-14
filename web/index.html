@@ -7,6 +7,8 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="lib/config.js"></script>
 	<script>
+		var now_song_id;
+		
 		$(document).ready(function(){
 			function s_list_item_click(){
 				console.log('inner s-list-item clicked event => $(this)');
@@ -71,13 +73,13 @@
 						$('#player').attr('src', res.s_url);
 						$('#player')[0].currentTime = res.now_Len;
 						$('#player')[0].play();
-						
+						$('#player')[0].volume = volume;
+						now_song_id=res.s_id
+						$('#s-id').text(res.s_id);
 						$('#s-title').text(res.s_name);
 						$('#s-artist').text(res.s_description.artist);
 						$('#s-album').text(res.s_description.album);
 						$('#s-length').text(res.s_t);
-						
-						
 					}
 				},
 				error: function(xhr){
@@ -96,6 +98,9 @@
 							console.log('songs are not ready yet');
 							return;
 						}else{
+							if(res['s_id'] !== now_song_id){
+								window.location.reload();
+							}
 							var player_t = $('#player')[0].currentTime;
 							if(Math.abs(player_t - res.now_Len) > 5){
 								$('#player')[0].currentTime = res.now_Len;
@@ -123,6 +128,7 @@
 		</div>
 		<div class="twelve wide column ts raised segment">
 			<div class="ts very narrow container segment">
+				Id:<div id="s-id"></div>
 				Title:<div id="s-title"></div>
 				Artist:<div id="s-artist"></div>
 				Album:<div id="s-album"></div>
