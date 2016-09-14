@@ -3,6 +3,7 @@
 ```node index.js``` to run.  
 Deploied at port 3000  
 edit /lib/config.js 's path  
+that's your song folder  
+put songs into it  
 and edit /web/lib/config.js 's domain name as well  
-you needs to put mp3 songs into it  
-that's your song folder
+Remember to add "http://"  

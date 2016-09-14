@@ -1,1 +1,1 @@
-var domain = 'http://localhost:3000';
+var domain = 'http://petjelinux.ddns.net:3000';
