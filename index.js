@@ -98,7 +98,7 @@ setInterval(function(){
 				CurrentSong.now_Len++;
 			}else{
 				if(SongList[CurrentSong.s_id+1]){
-					setCurrent(s_id+1, 0);
+					setCurrent(CurrentSong.s_id+1, 0);
 				}else{
 					setCurrent(0, 0);
 				}
