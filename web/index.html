@@ -42,15 +42,29 @@
 				url: domain+'/getList',
 				dataType: 'json',
 				success: function(res){
+					var type_object = {};
 					$.each(res, function(index, value){
+						if(!type_object[value.s_type]){
+							type_object[value.s_type] = {};
+						}
+						// s_id as key
+						type_object[value.s_type][value.s_id] = value;
+					});
+					
+					$.each(type_object, function(index, value){
 						$('#s-list').append(' \
-							<div class="ts list"> \
-								<a class="item s-list-item"> \
-									<div class="header">'+value.s_id+' '+value.s_name+'</div> \
-									'+value.s_t+'sec \
-								</a> \
-							</div> \
+							<div class="ts massive header">'+index+'</div> \
 						');
+						$.each(value, function(index, value){
+							$('#s-list').append(' \
+								<div class="ts list"> \
+									<a class="item s-list-item"> \
+										<div class="header">'+value.s_id+' '+value.s_name+'</div> \
+										'+value.s_t+'sec \
+									</a> \
+								</div> \
+							');
+						});
 					});
 					$('.s-list-item').click(s_list_item_click);
 				},

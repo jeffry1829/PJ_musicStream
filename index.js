@@ -72,6 +72,7 @@ function s_reload(this_f_path){
 								s_id: tmp_s_no++,
 								s_url: '/songs/'+path.relative(songpath,file),
 								s_t: duration,
+								s_type: path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file)), // new added property!
 								s_description: {
 									artist: tags.artist,
 									album: tags.album
