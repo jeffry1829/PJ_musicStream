@@ -52,6 +52,7 @@
 								<button class="ts icon button mini compact negative queue-item-remove"> \
 									<i class="icon remove"></i> \
 								</button> \
+								<br /> \
 							');
 						});
 						$('.queue-item').click(queue_forcePlay);
@@ -116,12 +117,10 @@
 						');
 						$.each(value, function(index, value){
 							$('#s-list').append(' \
-								<div class="ts list"> \
 									<a class="item s-list-item"> \
 										<div class="header">'+value.s_id+' '+value.s_name+'</div> \
 										'+value.s_t+'sec \
 									</a> \
-								</div> \
 							');
 						});
 					});
@@ -208,31 +207,30 @@
 				Artist:<div id="s-artist"></div>
 				Album:<div id="s-album"></div>
 				Length:<div id="s-length"></div>
+				<!-- <br /> will be append in the end-->
+				<div style="text-align: center;" id="queue-list">
+					<div class="ts list" id="queue-list">
+						<!--
+						<a class="item queue-item">
+							-- QueueId(Very Important)(same as Array's index) --SPACE-- ( -- SongId --SPACE-- Title --SPACE-- Length -- ) --
+						</a>
+						<button class="ts icon button mini compact negative queue-item-remove">
+    						<i class="icon remove"></i>
+						</button>
+						-->
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="four wide column ts raised segment" id="s-list">
-			<!--
-			<BIG classification header>
+			<!-- <BIG classification header> -->
 			<div class="ts list">
+				<!-- 
 				<a class="item" id="s-list-item">
 					<div class="header">-- Id --SPACE-- Title --</div>
 					-- Length --
 				</a>
-			</div>
-			-->
-		</div>
-		<div class="sixteen wide column ts raised segment">
-			<div style="text-align: center;" id="queue-list">
-				<div class="ts list" id="queue-list">
-					<!--
-					<a class="item queue-item">
-						-- QueueId(Very Important)(same as Array's index) --SPACE-- ( -- SongId --SPACE-- Title --SPACE-- Length -- ) --
-					</a>
-					<button class="ts icon button mini compact negative queue-item-remove">
-    					<i class="icon remove"></i>
-					</button>
-					-->
-				</div>
+				-->
 			</div>
 		</div>
 	</div>
