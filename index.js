@@ -97,7 +97,11 @@ setInterval(function(){
 			if(CurrentSong.s_t - CurrentSong.now_Len > 0){
 				CurrentSong.now_Len++;
 			}else{
-				CurrentSong.now_Len = 0; //replay
+				if(SongList[CurrentSong.s_id+1]){
+					setCurrent(s_id+1, 0);
+				}else{
+					setCurrent(0, 0);
+				}
 			}
 		}
 	}
