@@ -13,6 +13,7 @@ var songpath=config['songpath'];
 songpath=path.resolve(songpath);
 var CurrentSong={};
 var SongList={};
+var QueueList=[];
 var tmp_s_no=0;
 START();
 app.use(bodyParser.json());
@@ -28,7 +29,8 @@ app.get('/', function(req, res){
 app.post('/getCurrent',function(req, res){
 	res.json(CurrentSong);
 });
-app.post('/setCurrent',function(req, res){
+
+app.post('/setCurrent',function(req, res){ // Won't be used now
 	console.log('Router /setCurrent => req.body');
 	console.dir(req.body);
 	
@@ -36,10 +38,30 @@ app.post('/setCurrent',function(req, res){
 	var start_time = req.body.start_time;
 	setCurrent(s_id,start_time);
 });
+
+app.post('/getQueue', function(req, res){
+	res.json(QueueList);
+});
+app.post('/addQueue', function(req, res){
+	addQueue(req.body.s_id, req.body.start_time);
+});
+app.post('/forcePlay', function(req, res){
+	forcePlay(req.body.queue_index);
+});
+app.post('/removeQueue', function(req, res){
+	removeQueue(req.body.queue_index);
+});
 app.post('/getList',function(req, res){
 	res.json(SongList);
 });
 
+function forcePlay(queue_index){
+	setCurrent(QueueList[queue_index].s_id, QueueList[queue_index].start_time);
+	removeQueue(queue_index);
+}
+function removeQueue(queue_index){
+	QueueList.splice(queue_index, 1);
+}
 function setCurrent(s_id, start_time){
 	console.log('setCurrent => SongList');
 	console.dir(SongList);
@@ -56,6 +78,19 @@ function setCurrent(s_id, start_time){
 	
 	console.log('setCurrent => CurrentSong');
 	console.dir(CurrentSong);
+}
+function addQueue(s_id, start_time){
+	if(!CurrentSong.s_id && CurrentSong.s_id !== 0){
+		setCurrent(s_id, start_time);
+		return;
+	}
+	
+	var queueItem = {};
+	Object.assign(queueItem, SongList[s_id]);
+	delete queueItem['s_path'];
+	queueItem.s_id = s_id;
+	queueItem.start_time = 0;
+	QueueList.push(queueItem);
 }
 function s_reload(this_f_path){
 	recursive(this_f_path, function(err, files){
@@ -97,13 +132,15 @@ setInterval(function(){
 		}else{
 			if(CurrentSong.s_t - CurrentSong.now_Len > 0){
 				CurrentSong.now_Len++;
-			}else{
-				if(SongList[CurrentSong.s_id+1]){
+			}else{//start [When the song is over]
+				if(QueueList[0]){
+					setCurrent(QueueList.shift().s_id, 0);
+				}else if(SongList[CurrentSong.s_id+1]){
 					setCurrent(CurrentSong.s_id+1, 0);
 				}else{
 					setCurrent(0, 0);
 				}
-			}
+			}//end
 		}
 	}
 },1000);

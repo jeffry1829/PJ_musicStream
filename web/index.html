@@ -22,11 +22,53 @@
 				
 				$.ajax({
 					type: 'POST',
-					url: domain+'/setCurrent',
+					url: domain+'/addQueue',
 					dataType: 'json',
 					data: {
 						s_id: Number($(this)[0].innerText.split(' ')[0]),
 						start_time: 0 //There's no way to set yet
+					},
+					success: function(res){
+						//doesn't matter
+					},
+					error: function(xhr){
+						console.log(xhr);
+					}
+				});
+				updateQueueList();
+			}
+			function updateQueueList(){
+				$('#queue-list').empty();
+				$.ajax({
+					type: 'POST',
+					url: domain+'/getQueue',
+					dataType: 'json',
+					success: function(res){
+						res.forEach(function(value, index){
+							$('#queue-list').append(' \
+								<a class="item queue-item"> \
+									'+index+' ('+value.s_id+' '+value.s_name+' '+value.s_t+'sec) \
+								</a> \
+								<button class="ts icon button mini compact negative queue-item-remove"> \
+									<i class="icon remove"></i> \
+								</button> \
+							');
+						});
+						$('.queue-item').click(queue_forcePlay);
+						$('.queue-item-remove').click(removeQueue);
+					},
+					error: function(xhr){
+						console.log(xhr);
+					}
+				});
+			}
+			function queue_forcePlay(){
+				$.ajax({
+					type: 'POST',
+					url: domain+'/forcePlay',
+					dataType: 'json',
+					data: {
+						queue_index: Number($(this)[0].innerText.split(' ')[0])
 					},
 					success: function(res){
 						// doesn't matter
@@ -36,6 +78,23 @@
 					}
 				});
 				window.location.reload();
+			}
+			function removeQueue(){
+				$.ajax({
+					type: 'POST',
+					url: domain+'/removeQueue',
+					dataType: 'json',
+					data: {
+						queue_index: Number($(this).prev().get()[0].innerText.split(' ')[0])
+					},
+					success: function(res){
+						// doesn't matter
+					},
+					error: function(xhr){
+						console.log(xhr);
+					}
+				});
+				updateQueueList();
 			}
 			$.ajax({
 				type: 'POST',
@@ -101,6 +160,8 @@
 				}
 			});
 			
+			updateQueueList();
+			
 			setInterval(function(){
 				$.ajax({
 					type: 'POST',
@@ -151,6 +212,7 @@
 		</div>
 		<div class="four wide column ts raised segment" id="s-list">
 			<!--
+			<BIG classification header>
 			<div class="ts list">
 				<a class="item" id="s-list-item">
 					<div class="header">-- Id --SPACE-- Title --</div>
@@ -158,6 +220,20 @@
 				</a>
 			</div>
 			-->
+		</div>
+		<div class="sixteen wide column ts raised segment">
+			<div style="text-align: center;" id="queue-list">
+				<div class="ts list" id="queue-list">
+					<!--
+					<a class="item queue-item">
+						-- QueueId(Very Important)(same as Array's index) --SPACE-- ( -- SongId --SPACE-- Title --SPACE-- Length -- ) --
+					</a>
+					<button class="ts icon button mini compact negative queue-item-remove">
+    					<i class="icon remove"></i>
+					</button>
+					-->
+				</div>
+			</div>
 		</div>
 	</div>
 </body>
