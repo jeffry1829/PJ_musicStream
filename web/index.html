@@ -48,10 +48,10 @@
 							$('#queue-list').append(' \
 								<div class="item queue-item"> \
 									'+index+' ('+value.s_id+' '+value.s_name+' '+value.s_t+'sec) \
+									<button class="ts icon button mini compact negative queue-item-remove"> \
+										<i class="icon remove"></i> \
+									</button> \
 								</div> \
-								<button class="ts icon button mini compact negative queue-item-remove"> \
-									<i class="icon remove"></i> \
-								</button> \
 								<br /> \
 							');
 						});
@@ -208,23 +208,23 @@
 				Album:<div id="s-album"></div>
 				Length:<div id="s-length"></div>
 				<!-- <br /> will be append in the end-->
-				<div style="text-align: center;" id="queue-list">
+				<div style="text-align: center;">
 					<div class="ts list selection divided" id="queue-list">
 						<!--
 						<div class="item queue-item">
 							-- QueueId(Very Important)(same as Array's index) --SPACE-- ( -- SongId --SPACE-- Title --SPACE-- Length -- ) --
+							<button class="ts icon button mini compact negative queue-item-remove">
+    							<i class="icon remove"></i>
+							</button>
 						</div>
-						<button class="ts icon button mini compact negative queue-item-remove">
-    						<i class="icon remove"></i>
-						</button>
 						-->
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="four wide column ts raised segment" id="s-list">
+		<div class="four wide column ts raised segment">
 			<!-- <BIG classification header> -->
-			<div class="ts list selection divided">
+			<div class="ts list selection divided" id="s-list">
 				<!-- 
 				<div class="item" id="s-list-item">
 					<div class="header">-- Id --SPACE-- Title --</div>
