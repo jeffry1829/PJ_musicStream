@@ -3,7 +3,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>PJ_musicStream</title>
-	<link rel="stylesheet" href="//cdn.rawgit.com/TeaMeow/TocasUI/master/dist/tocas.min.css">
+	<link rel="stylesheet" href="lib/tocas.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="lib/config.js"></script>
 	<script>
@@ -46,9 +46,9 @@
 					success: function(res){
 						res.forEach(function(value, index){
 							$('#queue-list').append(' \
-								<a class="item queue-item"> \
+								<div class="item queue-item"> \
 									'+index+' ('+value.s_id+' '+value.s_name+' '+value.s_t+'sec) \
-								</a> \
+								</div> \
 								<button class="ts icon button mini compact negative queue-item-remove"> \
 									<i class="icon remove"></i> \
 								</button> \
@@ -117,10 +117,10 @@
 						');
 						$.each(value, function(index, value){
 							$('#s-list').append(' \
-									<a class="item s-list-item"> \
+									<div class="item s-list-item"> \
 										<div class="header">'+value.s_id+' '+value.s_name+'</div> \
 										'+value.s_t+'sec \
-									</a> \
+									</div> \
 							');
 						});
 					});
@@ -209,11 +209,11 @@
 				Length:<div id="s-length"></div>
 				<!-- <br /> will be append in the end-->
 				<div style="text-align: center;" id="queue-list">
-					<div class="ts list" id="queue-list">
+					<div class="ts list selection divided" id="queue-list">
 						<!--
-						<a class="item queue-item">
+						<div class="item queue-item">
 							-- QueueId(Very Important)(same as Array's index) --SPACE-- ( -- SongId --SPACE-- Title --SPACE-- Length -- ) --
-						</a>
+						</div>
 						<button class="ts icon button mini compact negative queue-item-remove">
     						<i class="icon remove"></i>
 						</button>
@@ -224,12 +224,12 @@
 		</div>
 		<div class="four wide column ts raised segment" id="s-list">
 			<!-- <BIG classification header> -->
-			<div class="ts list">
+			<div class="ts list selection divided">
 				<!-- 
-				<a class="item" id="s-list-item">
+				<div class="item" id="s-list-item">
 					<div class="header">-- Id --SPACE-- Title --</div>
 					-- Length --
-				</a>
+				</div>
 				-->
 			</div>
 		</div>
