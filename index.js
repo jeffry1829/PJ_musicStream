@@ -38,6 +38,7 @@ app.post('/setCurrent',function(req, res){ // Won't be used now
 	var s_id = req.body.s_id;
 	var start_time = req.body.start_time;
 	setCurrent(s_id,start_time);
+	res.end();
 });
 
 app.post('/getQueue', function(req, res){
@@ -45,12 +46,15 @@ app.post('/getQueue', function(req, res){
 });
 app.post('/addQueue', function(req, res){
 	addQueue(req.body.s_id, req.body.start_time);
+	res.end();
 });
 app.post('/forcePlay', function(req, res){
 	forcePlay(req.body.queue_index);
+	res.end();
 });
 app.post('/removeQueue', function(req, res){
 	removeQueue(req.body.queue_index);
+	res.end();
 });
 app.post('/getList',function(req, res){
 	res.json(SongList);
