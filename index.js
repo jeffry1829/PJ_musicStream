@@ -15,6 +15,7 @@ var CurrentSong={};
 var SongList={};
 var QueueList=[];
 var tmp_s_no=0;
+var default_start_time = -3;
 START();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -73,7 +74,7 @@ function setCurrent(s_id, start_time){
 	}
 	
 	CurrentSong = Object.assign(CurrentSong, SongList[s_id]);
-	CurrentSong.now_Len = 0;
+	CurrentSong.now_Len = start_time;
 	delete CurrentSong['s_path'];
 	
 	console.log('setCurrent => CurrentSong');
@@ -89,7 +90,7 @@ function addQueue(s_id, start_time){
 	Object.assign(queueItem, SongList[s_id]);
 	delete queueItem['s_path'];
 	queueItem.s_id = s_id;
-	queueItem.start_time = 0;
+	queueItem.start_time = start_time;
 	QueueList.push(queueItem);
 }
 function s_reload(this_f_path){
@@ -128,17 +129,17 @@ function START(){
 setInterval(function(){
 	if(CurrentSong.s_id || CurrentSong.s_id === 0){
 		if(!CurrentSong.now_Len && CurrentSong.now_Len !== 0){
-			CurrentSong.now_Len = 0;
+			CurrentSong.now_Len = default_start_time;
 		}else{
 			if(CurrentSong.s_t - CurrentSong.now_Len > 0){
 				CurrentSong.now_Len++;
 			}else{//start [When the song is over]
 				if(QueueList[0]){
-					setCurrent(QueueList.shift().s_id, 0);
+					setCurrent(QueueList.shift().s_id, default_start_time);
 				}else if(SongList[CurrentSong.s_id+1]){
-					setCurrent(CurrentSong.s_id+1, 0);
+					setCurrent(CurrentSong.s_id+1, default_start_time);
 				}else{
-					setCurrent(0, 0);
+					setCurrent(0, default_start_time);
 				}
 			}//end
 		}

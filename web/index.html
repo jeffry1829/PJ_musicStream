@@ -26,7 +26,7 @@
 					dataType: 'json',
 					data: {
 						s_id: Number($(this)[0].innerText.split(' ')[0]),
-						start_time: 0 //There's no way to set yet
+						start_time: -3 //There's no way to set yet
 					},
 					success: function(res){
 						//doesn't matter
@@ -55,8 +55,8 @@
 								<br /> \
 							');
 						});
-						$('.queue-item').click(queue_forcePlay);
 						$('.queue-item-remove').click(removeQueue);
+						$('.queue-item').click(queue_forcePlay);
 					},
 					error: function(xhr){
 						console.log(xhr);
@@ -80,13 +80,14 @@
 				});
 				window.location.reload();
 			}
-			function removeQueue(){
+			function removeQueue(e){
+				e.stopPropagation(); // only for remove button
 				$.ajax({
 					type: 'POST',
 					url: domain+'/removeQueue',
 					dataType: 'json',
 					data: {
-						queue_index: Number($(this).prev()[0].innerText.split(' ')[0])
+						queue_index: Number($(this).parent()[0].innerText.split(' ')[0])
 					},
 					success: function(res){
 						// doesn't matter
