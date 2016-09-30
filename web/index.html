@@ -6,10 +6,72 @@
 	<link rel="stylesheet" href="lib/tocas.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="lib/config.js"></script>
+	<script src="https://www.youtube.com/iframe_api"></script>
 	<script>
+		$('#player').hide();
+		$('#y-player').show();
+		var y_player = YT.Player('y-player', {
+			height: 390,
+			width: 640,
+			videoId: res['y_id'],
+			events: {}
+		});
 		var now_song_id;
 		
 		$(document).ready(function(){
+			function y_url_add(){
+				$.ajax({
+					type: 'POST',
+					url: domain+'/addYoutube',
+					dataType: 'json',
+					data: {
+						url: $(this).val()
+					},
+					success: function(res){
+						// res doesn't matter
+						updateSongList();
+					},
+					error: function(xhr){
+						console.log(xhr);
+					}
+				})
+			}
+			function updateSongList(){
+				$('#s-list').empty();
+				$.ajax({
+					type: 'POST',
+					url: domain+'/getList',
+					dataType: 'json',
+					success: function(res){
+						var type_object = {};
+						$.each(res, function(index, value){
+							if(!type_object[value.s_type]){
+								type_object[value.s_type] = {};
+							}
+							// s_id as key
+							type_object[value.s_type][value.s_id] = value;
+						});
+						
+						$.each(type_object, function(index, value){
+							$('#s-list').append(' \
+								<div class="ts massive header">'+index+'</div> \
+							');
+							$.each(value, function(index, value){
+								$('#s-list').append(' \
+										<div class="item s-list-item"> \
+											<div class="header">'+value.s_id+' '+value.s_name+'</div> \
+											'+value.s_t+'sec \
+										</div> \
+								');
+							});
+						});
+						$('.s-list-item').click(s_list_item_click);
+					},
+					error: function(xhr){
+						console.log(xhr);
+					}
+				});
+			}
 			function s_list_item_click(){
 				console.log('inner s-list-item clicked event => $(this)');
 				console.log($(this))
@@ -98,39 +160,8 @@
 				});
 				updateQueueList();
 			}
-			$.ajax({
-				type: 'POST',
-				url: domain+'/getList',
-				dataType: 'json',
-				success: function(res){
-					var type_object = {};
-					$.each(res, function(index, value){
-						if(!type_object[value.s_type]){
-							type_object[value.s_type] = {};
-						}
-						// s_id as key
-						type_object[value.s_type][value.s_id] = value;
-					});
-					
-					$.each(type_object, function(index, value){
-						$('#s-list').append(' \
-							<div class="ts massive header">'+index+'</div> \
-						');
-						$.each(value, function(index, value){
-							$('#s-list').append(' \
-									<div class="item s-list-item"> \
-										<div class="header">'+value.s_id+' '+value.s_name+'</div> \
-										'+value.s_t+'sec \
-									</div> \
-							');
-						});
-					});
-					$('.s-list-item').click(s_list_item_click);
-				},
-				error: function(xhr){
-					console.log(xhr);
-				}
-			});
+			
+			updateSongList();
 			
 			$.ajax({
 				type: 'POST',
@@ -143,16 +174,32 @@
 						console.log('songs are not ready yet');
 						return;
 					}else{
-						$('#player').attr('src', res.s_url);
-						$('#player')[0].currentTime = res.now_Len;
-						$('#player')[0].play();
-						$('#player')[0].volume = volume;
-						now_song_id=res.s_id
-						$('#s-id').text(res.s_id);
-						$('#s-title').text(res.s_name);
-						$('#s-artist').text(res.s_description.artist);
-						$('#s-album').text(res.s_description.album);
-						$('#s-length').text(res.s_t);
+						if(res['y_url']){
+							$('#player').hide();
+							$('#y-player').show();
+							y_player.seekTo(res.now_Len, false);
+							y_player.playVideo();
+							y_player.setVolume(volume*100);
+							now_song_id=res.s_id
+							$('#s-id').text(res.s_id);
+							$('#s-title').text(res.s_name);
+							$('#s-artist').text(res.s_description.owner);
+							$('#s-album').text('None');
+							$('#s-length').text(res.s_t);
+						}else{
+							$('#player').show();
+							$('#y-player').hide();
+							$('#player').attr('src', res.s_url);
+							$('#player')[0].currentTime = res.now_Len;
+							$('#player')[0].play();
+							$('#player')[0].volume = volume;
+							now_song_id=res.s_id
+							$('#s-id').text(res.s_id);
+							$('#s-title').text(res.s_name);
+							$('#s-artist').text(res.s_description.artist);
+							$('#s-album').text(res.s_description.album);
+							$('#s-length').text(res.s_t);
+						}
 					}
 				},
 				error: function(xhr){
@@ -176,9 +223,16 @@
 							if(res['s_id'] !== now_song_id){
 								window.location.reload();
 							}
-							var player_t = $('#player')[0].currentTime;
-							if(Math.abs(player_t - res.now_Len) > 5){
-								$('#player')[0].currentTime = res.now_Len;
+							if(res['y_url']){
+								var y_player_t = y_player.getCurrentTime();
+								if(Math.abs(y_player_t - res.now_Len) > 5){
+									y_player.seekTo(res.now_Len, false);
+								}
+							}else{
+								var player_t = $('#player')[0].currentTime;
+								if(Math.abs(player_t - res.now_Len) > 5){
+									$('#player')[0].currentTime = res.now_Len;
+								}
 							}
 						}
 					},
@@ -189,11 +243,8 @@
 				
 				updateQueueList();
 			},5000);
-			
-			$('#player').click(function(){
-				window.location.reload();
-			});
 		})
+		$('#y-url-input').click(y_url_add);
 	</script>
 </head>
 <body>
@@ -201,9 +252,14 @@
 		<div class="sixteen wide column ts raised segment">
 			<div style="text-align: center;">
 				<video controls preload="none" id="player"></video>
+				<div id="y-player"></div>
 			</div>
 		</div>
 		<div class="twelve wide column ts raised segment">
+			<div class="ts icon input">
+    			<input type="text" placeholder="Please input youtube url"  id="y-url-input">
+    			<i class="plus icon"></i>
+			</div>
 			<div class="ts very narrow container segment">
 				Id:<div id="s-id"></div>
 				Title:<div id="s-title"></div>
@@ -239,3 +295,32 @@
 	</div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

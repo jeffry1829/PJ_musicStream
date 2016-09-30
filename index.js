@@ -8,6 +8,13 @@ var path = require('path');
 var fs = require('fs');
 var fq = require('filequeue');
 var bodyParser = require('body-parser');
+var jsonfile = require('jsonfile');
+var queryString = require('query-string');
+var getYouTubeID = require('get-youtube-id');
+var youtubeInfo = require('youtube-info');
+
+var y_config = './y_config.json';
+var y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : []; // init stat
 
 var songpath=config['songpath'];
 songpath=path.resolve(songpath);
@@ -30,17 +37,16 @@ app.get('/', function(req, res){
 app.post('/getCurrent',function(req, res){
 	res.json(CurrentSong);
 });
-
 app.post('/setCurrent',function(req, res){ // Won't be used now
 	console.log('Router /setCurrent => req.body');
 	console.dir(req.body);
 	
 	var s_id = req.body.s_id;
 	var start_time = req.body.start_time;
+	
 	setCurrent(s_id,start_time);
 	res.end();
 });
-
 app.post('/getQueue', function(req, res){
 	res.json(QueueList);
 });
@@ -59,7 +65,27 @@ app.post('/removeQueue', function(req, res){
 app.post('/getList',function(req, res){
 	res.json(SongList);
 });
-
+app.post('/addYoutube', function(req, res){
+	var y_url = req.body.url;
+	if(y_Ss.indexOf(y_url) === -1){
+		y_Ss.push(y_url);
+		jsonfile.writeFileSync(y_config, y_Ss);
+		youtubeInfo(getYouTubeID(y_url), function(info){
+			SongList[tmp_s_no] = {
+					s_path: false,
+					s_name: info.title,
+					s_id: tmp_s_no++,
+					y_url: info.url, // changed to y_url
+					s_t: info.duration,
+					s_type: 'Youtube',
+					s_description: {
+						owner: info.owner // !!! owner !!!
+					}
+			};
+		});
+	}
+	res.end();
+});
 function forcePlay(queue_index){
 	setCurrent(QueueList[queue_index].s_id, QueueList[queue_index].start_time);
 	removeQueue(queue_index);
@@ -98,6 +124,25 @@ function addQueue(s_id, start_time){
 	QueueList.push(queueItem);
 }
 function s_reload(this_f_path){
+	// load Youtubes first , reload y_config
+	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
+	y.Ss.forEach(function(y_url){
+		youtubeInfo(getYouTubeID(y_url), function(info){
+			SongList[tmp_s_no] = {
+					s_path: false,
+					s_name: info.title,
+					s_id: tmp_s_no++,
+					y_url: y_url, // changed to y_url
+					y_id: getYouTubeID(y_url), // shortcut
+					s_t: info.duration,
+					s_type: 'Youtube',
+					s_description: {
+						owner: info.owner // !!! owner !!!
+					}
+			};
+		});
+	});
+	
 	recursive(this_f_path, function(err, files){
 		// file order is not garenteed
 		files.forEach(function(file){

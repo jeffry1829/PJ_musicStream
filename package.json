@@ -20,8 +20,12 @@
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "filequeue": "^0.5.0",
+    "get-youtube-id": "^1.0.0",
     "jsmediatags": "^3.3.0",
+    "jsonfile": "^2.4.0",
     "mp3-duration": "^1.0.10",
-    "recursive-readdir": "^2.0.0"
+    "query-string": "^4.2.3",
+    "recursive-readdir": "^2.0.0",
+    "youtube-info": "^1.1.1"
   }
 }
