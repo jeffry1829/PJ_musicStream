@@ -70,12 +70,18 @@ app.post('/addYoutube', function(req, res){
 	if(y_Ss.indexOf(y_url) === -1){
 		y_Ss.push(y_url);
 		jsonfile.writeFileSync(y_config, y_Ss);
-		youtubeInfo(getYouTubeID(y_url), function(info){
+		youtubeInfo(getYouTubeID(y_url, {fuzzy: false}), function(err, info){
+			if(err){
+				console.log(err);
+				res.end();
+				return;
+			}
 			SongList[tmp_s_no] = {
 					s_path: false,
 					s_name: info.title,
 					s_id: tmp_s_no++,
 					y_url: info.url, // changed to y_url
+					y_id: getYouTubeID(y_url, {fuzzy: false}), // shortcut
 					s_t: info.duration,
 					s_type: 'Youtube',
 					s_description: {
@@ -83,8 +89,8 @@ app.post('/addYoutube', function(req, res){
 					}
 			};
 		});
+		res.json({message: 'why should i add json here'});
 	}
-	res.end();
 });
 function forcePlay(queue_index){
 	setCurrent(QueueList[queue_index].s_id, QueueList[queue_index].start_time);
@@ -103,6 +109,7 @@ function setCurrent(s_id, start_time){
 		s_id=0;
 	}
 	
+	CurrentSong = {};
 	CurrentSong = Object.assign(CurrentSong, SongList[s_id]);
 	CurrentSong.now_Len = start_time;
 	delete CurrentSong['s_path'];
@@ -123,25 +130,36 @@ function addQueue(s_id, start_time){
 	queueItem.start_time = start_time;
 	QueueList.push(queueItem);
 }
-function s_reload(this_f_path){
-	// load Youtubes first , reload y_config
-	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
-	y.Ss.forEach(function(y_url){
-		youtubeInfo(getYouTubeID(y_url), function(info){
-			SongList[tmp_s_no] = {
-					s_path: false,
-					s_name: info.title,
-					s_id: tmp_s_no++,
-					y_url: y_url, // changed to y_url
-					y_id: getYouTubeID(y_url), // shortcut
-					s_t: info.duration,
-					s_type: 'Youtube',
-					s_description: {
-						owner: info.owner // !!! owner !!!
-					}
-			};
-		});
+function load_one_youtube(y_Ss, index){
+	youtubeInfo(getYouTubeID(y_Ss[index], {fuzzy: false}), function(err, info){
+		if(err){
+			console.log(err);
+			return;
+		}
+		SongList[tmp_s_no] = {
+				s_path: false,
+				s_name: info.title,
+				s_id: tmp_s_no++,
+				y_url: y_Ss[index], // changed to y_url
+				y_id: getYouTubeID(y_Ss[index], {fuzzy: false}), // shortcut
+				s_t: info.duration,
+				s_type: 'Youtube',
+				s_description: {
+					owner: info.owner // !!! owner !!!
+				}
+		};
+		
+		//i'm trying to make it sync
+		if(y_Ss.length-1 >= index+1){
+			load_one_youtube(y_Ss, index+1)
+		}
 	});
+}
+function s_reload(this_f_path){
+	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
+	if(y_Ss.length>=1){
+		load_one_youtube(y_Ss, 0);
+	}
 	
 	recursive(this_f_path, function(err, files){
 		// file order is not garenteed

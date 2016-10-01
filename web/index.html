@@ -6,19 +6,10 @@
 	<link rel="stylesheet" href="lib/tocas.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="lib/config.js"></script>
-	<script src="https://www.youtube.com/iframe_api"></script>
 	<script>
-		$('#player').hide();
-		$('#y-player').show();
-		var y_player = YT.Player('y-player', {
-			height: 390,
-			width: 640,
-			videoId: res['y_id'],
-			events: {}
-		});
 		var now_song_id;
-		
-		$(document).ready(function(){
+		var y_player;
+		function onPlayerReady(){
 			function y_url_add(){
 				$.ajax({
 					type: 'POST',
@@ -29,6 +20,7 @@
 					},
 					success: function(res){
 						// res doesn't matter
+						$('#y-url-input').val('')
 						updateSongList();
 					},
 					error: function(xhr){
@@ -177,6 +169,7 @@
 						if(res['y_url']){
 							$('#player').hide();
 							$('#y-player').show();
+							y_player.loadVideoById(res['y_id'], res.now_Len, 'low');
 							y_player.seekTo(res.now_Len, false);
 							y_player.playVideo();
 							y_player.setVolume(volume*100);
@@ -243,8 +236,33 @@
 				
 				updateQueueList();
 			},5000);
-		})
-		$('#y-url-input').click(y_url_add);
+			$('#y-url-input').keypress(function(e){
+				var code = (e.keyCode ? e.keyCode : e.which);
+				if(code === 13){
+					$(this).submit();
+				}
+			});
+			$('#y-url-input').submit(y_url_add);
+		}
+		function onYouTubeIframeAPIReady(){
+			console.log('onYouTubeIframeAPIReady in!')
+			y_player = new YT.Player('y-player', {
+				height: 390,
+				width: 640,
+				events: {
+					'onReady': onPlayerReady
+				}
+			});
+		}
+		$(document).ready(function(){
+			$('#player').hide();
+			$('#y-player').hide();
+			
+			var tag = document.createElement('script');
+			tag.src = "https://www.youtube.com/iframe_api";
+			var firstScriptTag = document.getElementsByTagName('script')[0];
+			firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+		});
 	</script>
 </head>
 <body>
