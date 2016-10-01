@@ -292,9 +292,6 @@
 				}
 			});
 			$('#y-url-input').submit(y_url_add);
-			$('#addicon').click(function(){
-				$('#y-url-input').submit()
-			});
 			$('#global-pause-button').click(function(){
 				$.ajax({
 					type: 'POST',
@@ -317,6 +314,7 @@
 		function onYouTubeIframeAPIReady(){
 			console.log('onYouTubeIframeAPIReady in!')
 			y_player = new YT.Player('y-player', {
+				playerVars: {autoplay: 1, loop: 1},
 				height: 390,
 				width: 640,
 				events: {
