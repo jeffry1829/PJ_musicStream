@@ -12,8 +12,10 @@ var jsonfile = require('jsonfile');
 var queryString = require('query-string');
 var getYouTubeID = require('get-youtube-id');
 var youtubeInfo = require('youtube-info');
+var createIfNotExist = require("create-if-not-exist");
 
 var y_config = './y_config.json';
+createIfNotExist(y_config, '[]')
 var y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : []; // init stat
 
 var songpath=config['songpath'];

@@ -18,6 +18,7 @@
   "homepage": "https://github.com/jeffry1829/PJ_musicStream#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "create-if-not-exist": "0.0.2",
     "express": "^4.14.0",
     "filequeue": "^0.5.0",
     "get-youtube-id": "^1.0.0",
