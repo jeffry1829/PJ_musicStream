@@ -162,6 +162,8 @@ function load_one_youtube(y_Ss, index){
 			console.log(err);
 			if(y_Ss.length-1 >= index+1){
 				load_one_youtube(y_Ss, index+1)
+			}else{
+				hardsong_load()
 			}
 			return;
 		}
@@ -181,6 +183,8 @@ function load_one_youtube(y_Ss, index){
 		//i'm trying to make it sync
 		if(y_Ss.length-1 >= index+1){
 			load_one_youtube(y_Ss, index+1)
+		}else{
+			hardsong_load()
 		}
 	});
 }
@@ -188,8 +192,11 @@ function s_reload(this_f_path){
 	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
 	if(y_Ss.length>=1){
 		load_one_youtube(y_Ss, 0);
+	}else{
+		hardsong_load();
 	}
-	
+}
+function hardsong_load(){
 	recursive(this_f_path, function(err, files){
 		// file order is not garenteed
 		files.forEach(function(file){
