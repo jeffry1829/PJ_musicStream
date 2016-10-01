@@ -160,6 +160,9 @@ function load_one_youtube(y_Ss, index){
 	youtubeInfo(getYouTubeID(y_Ss[index], {fuzzy: false}), function(err, info){
 		if(err){
 			console.log(err);
+			if(y_Ss.length-1 >= index+1){
+				load_one_youtube(y_Ss, index+1)
+			}
 			return;
 		}
 		SongList[tmp_s_no] = {
