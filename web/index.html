@@ -6,10 +6,19 @@
 	<link rel="stylesheet" href="lib/tocas.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="lib/config.js"></script>
+	<script src="lib/shake.js"></script>
 	<script>
 		var now_song_id;
 		var y_player;
 		function onPlayerReady(){
+			var myShakeEvent = new Shake();
+			window.addEventListener('shake', function(){
+				if(y_player){
+				if(y_player.getPlayerState() !== 1 && y_player.getPlayerState() !== -1){
+					y_player.playVideo();
+				}
+				}
+			}, false);
 			function y_url_add(){
 				$.ajax({
 					type: 'POST',
@@ -205,7 +214,7 @@
 							$('#player').hide();
 							$('#y-player').show();
 							y_player.loadVideoById(res['y_id'], res.now_Len, 'low');
-							y_player.seekTo(res.now_Len, false);
+							y_player.seekTo(res.now_Len, true);
 							y_player.playVideo();
 							y_player.setVolume(volume*100);
 							now_song_id=res.s_id
@@ -254,7 +263,7 @@
 							if(res['y_url']){
 								var y_player_t = y_player.getCurrentTime();
 								if(Math.abs(y_player_t - res.now_Len) > 5){
-									y_player.seekTo(res.now_Len, false);
+									y_player.seekTo(res.now_Len, true);
 									y_player.playVideo();
 								}
 							}else{
