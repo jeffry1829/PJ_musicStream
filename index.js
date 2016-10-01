@@ -25,6 +25,7 @@ var SongList={};
 var QueueList=[];
 var tmp_s_no=0;
 var default_start_time = -3;
+var is_pause = false;
 START();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -64,8 +65,20 @@ app.post('/removeQueue', function(req, res){
 	removeQueue(req.body.queue_index);
 	res.end();
 });
+app.post('/removeYoutube', function(req, res){
+	removeYoutube(req.body.youtube_s_id);
+	res.json({message: 'i really dont know why i should add a json here'});
+});
 app.post('/getList',function(req, res){
 	res.json(SongList);
+});
+app.post('/GlobalPause', function(req, res){
+	is_pause = true;
+	res.end();
+});
+app.post('/GlobalPlay', function(req, res){
+	is_pause = false;
+	res.end(); 
 });
 app.post('/addYoutube', function(req, res){
 	var y_url = req.body.url;
@@ -90,10 +103,15 @@ app.post('/addYoutube', function(req, res){
 						owner: info.owner // !!! owner !!!
 					}
 			};
+			res.json({message: 'why should i add json here'});
 		});
-		res.json({message: 'why should i add json here'});
 	}
 });
+function removeYoutube(youtube_s_id){
+	y_Ss.splice(y_Ss.indexOf(SongList[youtube_s_id]['y_url']), 1);
+	SongList[youtube_s_id]['removed'] = true // delete this s_id !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	jsonfile.writeFileSync(y_config, y_Ss);
+}
 function forcePlay(queue_index){
 	setCurrent(QueueList[queue_index].s_id, QueueList[queue_index].start_time);
 	removeQueue(queue_index);
@@ -109,6 +127,12 @@ function setCurrent(s_id, start_time){
 	
 	if(!s_id && s_id !== 0){
 		s_id=0;
+	}
+	if(SongList[s_id]['removed']){
+		CurrentSong.s_id++; // id++
+		CurrentSong.s_t = CurrentSong.now_Len+1;
+		interval_checking();
+		return;
 	}
 	
 	CurrentSong = {};
@@ -195,22 +219,31 @@ function s_reload(this_f_path){
 function START(){
 	s_reload(songpath);
 }
-setInterval(function(){
-	if(CurrentSong.s_id || CurrentSong.s_id === 0){
-		if(!CurrentSong.now_Len && CurrentSong.now_Len !== 0){
-			CurrentSong.now_Len = default_start_time;
-		}else{
-			if(CurrentSong.s_t - CurrentSong.now_Len > 0){
-				CurrentSong.now_Len++;
-			}else{//start [When the song is over]
-				if(QueueList[0]){
-					setCurrent(QueueList.shift().s_id, default_start_time);
-				}else if(SongList[CurrentSong.s_id+1]){
-					setCurrent(CurrentSong.s_id+1, default_start_time);
-				}else{
-					setCurrent(0, default_start_time);
-				}
-			}//end
+function interval_checking(){
+	if(!is_pause){
+		if(CurrentSong.s_id || CurrentSong.s_id === 0){
+			if(!CurrentSong.now_Len && CurrentSong.now_Len !== 0){
+				CurrentSong.now_Len = default_start_time;
+			}else{
+				if(CurrentSong.s_t - CurrentSong.now_Len > 0){
+					CurrentSong.now_Len++;
+				}else{//start [When the song is over]
+					if(QueueList[0]){
+						setCurrent(QueueList.shift().s_id, default_start_time);
+					}else if(SongList[CurrentSong.s_id+1]){
+						if(!SongList[CurrentSong.s_id+1]['removed']){ // and not removed
+							setCurrent(CurrentSong.s_id+1, default_start_time);
+						}else{ // if is removed
+							CurrentSong.s_id++; // id++
+							CurrentSong.s_t = CurrentSong.now_Len+1;
+							interval_checking();
+						}
+					}else{
+						setCurrent(0, default_start_time);
+					}
+				}//end
+			}
 		}
 	}
-},1000);
+}
+setInterval(interval_checking,1000);

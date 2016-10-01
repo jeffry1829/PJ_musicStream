@@ -48,21 +48,56 @@
 							$('#s-list').append(' \
 								<div class="ts massive header">'+index+'</div> \
 							');
-							$.each(value, function(index, value){
-								$('#s-list').append(' \
-										<div class="item s-list-item"> \
-											<div class="header">'+value.s_id+' '+value.s_name+'</div> \
-											'+value.s_t+'sec \
-										</div> \
-								');
-							});
+							// If type === Youtube, add remove button
+							if(index === 'Youtube'){
+								$.each(value, function(index, value){
+									if(!value.removed){ // if not removed
+										$('#s-list').append(' \
+												<div class="item s-list-item"> \
+													<div class="header">'+value.s_id+' '+value.s_name+'</div> \
+													'+value.s_t+'sec \
+													<button class="ts icon button mini compact negative youtube-item-remove"> \
+														<i class="icon remove"></i> \
+													</button> \
+												</div> \
+										');
+									}
+								});
+							}else{
+								$.each(value, function(index, value){
+									$('#s-list').append(' \
+											<div class="item s-list-item"> \
+												<div class="header">'+value.s_id+' '+value.s_name+'</div> \
+												'+value.s_t+'sec \
+											</div> \
+									');
+								});
+							}
 						});
 						$('.s-list-item').click(s_list_item_click);
+						$('.youtube-item-remove').click(youtube_item_remove);
 					},
 					error: function(xhr){
 						console.log(xhr);
 					}
 				});
+			}
+			function youtube_item_remove(e){
+				e.stopPropagation(); // only for remove button
+				$.ajax({
+					type: 'POST',
+					url: domain+'/removeYoutube',
+					dataType: 'json',
+					data: {
+						youtube_s_id: Number($(this).parent()[0].innerText.split(' ')[0])
+					},
+					success: function(res){
+						updateSongList();
+					},
+					error: function(xhr){
+						console.log(xhr);
+					}
+				})
 			}
 			function s_list_item_click(){
 				console.log('inner s-list-item clicked event => $(this)');
@@ -220,11 +255,13 @@
 								var y_player_t = y_player.getCurrentTime();
 								if(Math.abs(y_player_t - res.now_Len) > 5){
 									y_player.seekTo(res.now_Len, false);
+									y_player.playVideo();
 								}
 							}else{
 								var player_t = $('#player')[0].currentTime;
 								if(Math.abs(player_t - res.now_Len) > 5){
 									$('#player')[0].currentTime = res.now_Len;
+									$('#player')[0].play();
 								}
 							}
 						}
@@ -243,6 +280,27 @@
 				}
 			});
 			$('#y-url-input').submit(y_url_add);
+			$('#addicon').click(function(){
+				$('#y-url-input').submit()
+			});
+			$('#global-pause-button').click(function(){
+				$.ajax({
+					type: 'POST',
+					url: domain+'/GlobalPause',
+					error: function(xhr){
+						console.log(xhr);
+					}
+				})
+			});
+			$('#global-play-button').click(function(){
+				$.ajax({
+					type: 'POST',
+					url: domain+'/GlobalPlay',
+					error: function(xhr){
+						console.log(xhr);
+					}
+				})
+			})
 		}
 		function onYouTubeIframeAPIReady(){
 			console.log('onYouTubeIframeAPIReady in!')
@@ -268,15 +326,24 @@
 <body>
 	<div class="ts stackable grid">
 		<div class="sixteen wide column ts raised segment">
+			<div class="ts inverted info segment center aligned">
+    			<p> 
+    				If you just want to pause your browser <br />
+    				Don't use Global Play/Pause <br />
+    				Just close this tab until you want to listen again
+    			</p>
+			</div>
+			<button class="ts fluid top attached button" id="global-play-button">Global Play</button>
 			<div style="text-align: center;">
 				<video controls preload="none" id="player"></video>
 				<div id="y-player"></div>
 			</div>
+			<button class="ts fluid bottom attached button" id="global-pause-button">Global Pause</button>
 		</div>
 		<div class="twelve wide column ts raised segment">
 			<div class="ts icon input">
     			<input type="text" placeholder="Please input youtube url"  id="y-url-input">
-    			<i class="plus icon"></i>
+    			<i class="plus icon" id="addicon"></i>
 			</div>
 			<div class="ts very narrow container segment">
 				Id:<div id="s-id"></div>
