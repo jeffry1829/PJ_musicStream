@@ -156,17 +156,23 @@ function addQueue(s_id, start_time){
 	queueItem.start_time = start_time;
 	QueueList.push(queueItem);
 }
-function load_one_youtube(y_Ss, index){
-	youtubeInfo(getYouTubeID(y_Ss[index], {fuzzy: false}), function(err, info){
+function load_one_youtube(y_Ss, index, this_f_path){
+	youtubeInfo(getYouTubeID(y_Ss[index], {fuzzy: false}) ? getYouTubeID(y_Ss[index], {fuzzy: false}) : 'NO ID', function(err, info){
 		if(err){
 			console.log(err);
 			if(y_Ss.length-1 >= index+1){
-				load_one_youtube(y_Ss, index+1)
+				console.log('load_one_youtube => err => y_Ss.length, index');
+				console.log(y_Ss.length+', '+index);
+				console.log('load_one_youtube => err => y_Ss[index]');
+				console.log(y_Ss[index]);
+				load_one_youtube(y_Ss, index+1, this_f_path)
 			}else{
-				hardsong_load()
+				hardsong_load(this_f_path)
 			}
 			return;
 		}
+		
+		console.log('load_one_youtube => success!');
 		SongList[tmp_s_no] = {
 				s_path: false,
 				s_name: info.title,
@@ -182,21 +188,22 @@ function load_one_youtube(y_Ss, index){
 		
 		//i'm trying to make it sync
 		if(y_Ss.length-1 >= index+1){
-			load_one_youtube(y_Ss, index+1)
+			console.log('load_one_youtube => recall!');
+			load_one_youtube(y_Ss, index+1, this_f_path)
 		}else{
-			hardsong_load()
+			hardsong_load(this_f_path)
 		}
 	});
 }
 function s_reload(this_f_path){
 	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
 	if(y_Ss.length>=1){
-		load_one_youtube(y_Ss, 0);
+		load_one_youtube(y_Ss, 0, this_f_path);
 	}else{
-		hardsong_load();
+		hardsong_load(this_f_path);
 	}
 }
-function hardsong_load(){
+function hardsong_load(this_f_path){
 	recursive(this_f_path, function(err, files){
 		// file order is not garenteed
 		files.forEach(function(file){
