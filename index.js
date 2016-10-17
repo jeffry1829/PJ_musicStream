@@ -13,6 +13,7 @@ var queryString = require('query-string');
 var getYouTubeID = require('get-youtube-id');
 var youtubeInfo = require('youtube-info');
 var createIfNotExist = require("create-if-not-exist");
+var escape = require('escape-html');
 
 var y_config = './y_config.json';
 createIfNotExist(y_config, '[]')
@@ -175,14 +176,14 @@ function load_one_youtube(y_Ss, index, this_f_path){
 		console.log('load_one_youtube => success!');
 		SongList[tmp_s_no] = {
 				s_path: false,
-				s_name: info.title,
+				s_name: escape(info.title),
 				s_id: tmp_s_no++,
 				y_url: y_Ss[index], // changed to y_url
 				y_id: getYouTubeID(y_Ss[index], {fuzzy: false}), // shortcut
 				s_t: info.duration,
 				s_type: 'Youtube',
 				s_description: {
-					owner: info.owner // !!! owner !!!
+					owner: escape(info.owner) // !!! owner !!!
 				}
 		};
 		
@@ -214,14 +215,14 @@ function hardsong_load(this_f_path){
 					mp3duration(file, function(err, duration){
 						SongList[tmp_s_no] = {
 								s_path: file,
-								s_name: tags.title, // why is there a "title" tag?!, it's not mentioned in the document!
+								s_name: escape(tags.title), // why is there a "title" tag?!, it's not mentioned in the document!
 								s_id: tmp_s_no++,
 								s_url: '/songs/'+path.relative(songpath,file),
 								s_t: duration,
-								s_type: path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file)), // new added property!
+								s_type: escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file))), // new added property!
 								s_description: {
-									artist: tags.artist,
-									album: tags.album
+									artist: escape(tags.artist),
+									album: escape(tags.album)
 								}
 						};
 					})
