@@ -14,6 +14,9 @@ var getYouTubeID = require('get-youtube-id');
 var youtubeInfo = require('youtube-info');
 var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
+var http = require('http');
+
+var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
 
 var y_config = './y_config.json';
 createIfNotExist(y_config, '[]')
@@ -27,6 +30,7 @@ var QueueList=[];
 var tmp_s_no=0;
 var default_start_time = -3;
 var is_pause = false;
+var online_count = 0;
 START();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -34,7 +38,6 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static(__dirname+'/web'));
 app.use('/songs',express.static(songpath));
-app.listen(3000);
 app.get('/', function(req, res){
 	res.sendFile(__dirname+'/web/index.html');
 })
@@ -108,6 +111,16 @@ app.post('/addYoutube', function(req, res){
 		});
 	}
 });
+
+io.on('connection', function(socket){
+	online_count++;
+	io.emit('online_count', {online_count: online_count});
+	socket.on('disconnect', function(){
+		online_count--;
+		io.emit('online_count', {online_count: online_count});
+	})
+});
+
 function removeYoutube(youtube_s_id){
 	y_Ss.splice(y_Ss.indexOf(SongList[youtube_s_id]['y_url']), 1);
 	SongList[youtube_s_id]['removed'] = true // delete this s_id !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
