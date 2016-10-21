@@ -16,7 +16,7 @@ var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
 var q = require('queue')({
-	concurrency: 30 // maximum async work at a time
+	concurrency: 100 // maximum async work at a time
 });
 process.setMaxListeners(0); // disable limitation
 q.on('success', function(){
@@ -37,6 +37,7 @@ var QueueList=[];
 var tmp_s_no=0;
 var default_start_time = -3;
 var is_pause = false;
+var is_user_set_to_pause = false;
 var online_count = 0;
 START();
 app.use(bodyParser.json());
@@ -89,10 +90,12 @@ app.post('/getList',function(req, res){
 });
 app.post('/GlobalPause', function(req, res){
 	is_pause = true;
+	is_user_set_to_pause = true;
 	res.end();
 });
 app.post('/GlobalPlay', function(req, res){
 	is_pause = false;
+	is_user_set_to_pause = false;
 	res.end(); 
 });
 app.post('/addYoutube', function(req, res){
@@ -127,7 +130,7 @@ io.on('connection', function(socket){
 	online_count++;
 	io.emit('online_count', {online_count: online_count});
 	
-	if(online_count > 0 && is_pause){
+	if(online_count > 0 && is_pause && !is_user_set_to_pause){
 		is_pause = false;
 	}
 	
@@ -139,7 +142,7 @@ io.on('connection', function(socket){
 	socket.on('disconnect', function(){
 		online_count--;
 		io.emit('online_count', {online_count: online_count});
-		if(online_count === 0 && !is_pause){
+		if(online_count === 0){
 			is_pause = true;
 		}
 	});
