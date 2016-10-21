@@ -15,8 +15,9 @@ var youtubeInfo = require('youtube-info');
 var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
-var q = require('queue')();
-q.concurrency = 50; // maximum async work at a time
+var q = require('queue')({
+	concurrency: 50 // maximum async work at a time
+});
 
 var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
 
