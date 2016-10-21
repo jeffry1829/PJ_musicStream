@@ -19,6 +19,9 @@ var q = require('queue')({
 	concurrency: 30 // maximum async work at a time
 });
 process.setMaxListeners(0); // disable limitation
+q.on('success', function(){
+	console.log('one song loaded');
+});
 
 var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
 
@@ -278,7 +281,7 @@ function hardsong_load(this_f_path){
 				});
 			})
 			q.start(function(){
-				console.log('q.start cb occured');
+				console.log('q.start cb occured => will be called when the queue empties or when an error occurs.');
 			})
 		})
 	})
