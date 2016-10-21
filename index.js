@@ -127,15 +127,22 @@ io.on('connection', function(socket){
 	online_count++;
 	io.emit('online_count', {online_count: online_count});
 	
+	if(online_count > 0 && is_pause){
+		is_pause = false;
+	}
+	
 	socket.on('addQueue', function(s_id, start_time){
 		addQueue(s_id, start_time);
 		io.emit('QueueBeenSet', QueueList);
-	})
+	});
 	
 	socket.on('disconnect', function(){
 		online_count--;
 		io.emit('online_count', {online_count: online_count});
-	})
+		if(online_count === 0 && !is_pause){
+			is_pause = true;
+		}
+	});
 	
 });
 
