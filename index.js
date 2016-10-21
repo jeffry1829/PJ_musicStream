@@ -16,7 +16,7 @@ var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
 var q = require('queue')({
-	concurrency: 50 // maximum async work at a time
+	concurrency: 30 // maximum async work at a time
 });
 
 var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
@@ -238,39 +238,39 @@ function hardsong_load(this_f_path){
 		// file order is not garenteed
 		files.forEach(function(file){
 			file = path.resolve(file);
-			jsmediatags.read(file, {
-				onSuccess: function(result){
-					var tags = result.tags;
-					q.push(function(ok){
-						mp3duration(file, function(err, duration){
-							if(err){
-								console.log(err);
+			q.push(function(ok){
+				jsmediatags.read(file, {
+					onSuccess: function(result){
+						var tags = result.tags;
+							mp3duration(file, function(err, duration){
+								if(err){
+									console.log(err);
+									ok();
+									return;
+								}
+								SongList[tmp_s_no] = {
+										s_path: file,
+										s_name: escape(tags.title), // why is there a "title" tag?!, it's not mentioned in the document!
+										s_id: tmp_s_no++,
+										s_url: '/songs/'+path.relative(songpath,file),
+										s_t: duration,
+										s_type: escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file))), // new added property!
+										s_description: {
+											artist: escape(tags.artist),
+											album: escape(tags.album)
+										}
+								};
 								ok();
-								return;
-							}
-							SongList[tmp_s_no] = {
-									s_path: file,
-									s_name: escape(tags.title), // why is there a "title" tag?!, it's not mentioned in the document!
-									s_id: tmp_s_no++,
-									s_url: '/songs/'+path.relative(songpath,file),
-									s_t: duration,
-									s_type: escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file))), // new added property!
-									s_description: {
-										artist: escape(tags.artist),
-										album: escape(tags.album)
-									}
-							};
-							ok();
-						});
-					});
-					q.start(function(){
-						console.log('q.start cb occured');
-					})
-			  },
-			  onError: function(error){
-			    console.log(':(', error.type, error.info);
-			  }
-			});
+							});
+				  },
+				  onError: function(error){
+				    console.log(':(', error.type, error.info);
+				  }
+				});
+			})
+			q.start(function(){
+				console.log('q.start cb occured');
+			})
 		})
 	})
 }
