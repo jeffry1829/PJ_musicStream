@@ -27,6 +27,7 @@
     "jsonfile": "^2.4.0",
     "mp3-duration": "^1.0.10",
     "query-string": "^4.2.3",
+    "queue": "^4.0.0",
     "recursive-readdir": "^2.0.0",
     "request": "^2.75.0",
     "socket.io": "^1.5.0",
