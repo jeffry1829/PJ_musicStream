@@ -287,6 +287,7 @@ function hardsong_load(this_f_path){
 				  },
 				  onError: function(error){
 				    console.log(':(', error.type, error.info);
+				    ok();
 				  }
 				});
 			})
