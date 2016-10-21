@@ -18,7 +18,7 @@ var http = require('http');
 var q = require('queue')({
 	concurrency: 100 // maximum async work at a time
 });
-process.setMaxListeners(0); // disable limitation
+q.setMaxListeners(0); // disable limitation
 q.on('success', function(){
 	console.log('one song loaded');
 });
