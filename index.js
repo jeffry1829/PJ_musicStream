@@ -57,16 +57,20 @@ app.post('/setCurrent',function(req, res){ // Won't be used now
 app.post('/getQueue', function(req, res){
 	res.json(QueueList);
 });
+/*
 app.post('/addQueue', function(req, res){
 	addQueue(req.body.s_id, req.body.start_time);
 	res.end();
 });
+*/
 app.post('/forcePlay', function(req, res){
 	forcePlay(req.body.queue_index);
+	io.emit('QueueBeenSet', QueueList);
 	res.end();
 });
 app.post('/removeQueue', function(req, res){
 	removeQueue(req.body.queue_index);
+	io.emit('QueueBeenSet', QueueList);
 	res.end();
 });
 app.post('/removeYoutube', function(req, res){
@@ -115,10 +119,17 @@ app.post('/addYoutube', function(req, res){
 io.on('connection', function(socket){
 	online_count++;
 	io.emit('online_count', {online_count: online_count});
+	
+	socket.on('addQueue', function(s_id, start_time){
+		addQueue(s_id, start_time);
+		io.emit('QueueBeenSet', QueueList);
+	})
+	
 	socket.on('disconnect', function(){
 		online_count--;
 		io.emit('online_count', {online_count: online_count});
 	})
+	
 });
 
 function removeYoutube(youtube_s_id){
@@ -132,6 +143,7 @@ function forcePlay(queue_index){
 }
 function removeQueue(queue_index){
 	QueueList.splice(queue_index, 1);
+	io.emit('QueueBeenSet', QueueList);
 }
 function setCurrent(s_id, start_time){
 	console.log('setCurrent => SongList');
@@ -169,6 +181,7 @@ function addQueue(s_id, start_time){
 	queueItem.s_id = s_id;
 	queueItem.start_time = start_time;
 	QueueList.push(queueItem);
+	io.emit('QueueBeenSet', QueueList);
 }
 function load_one_youtube(y_Ss, index, this_f_path){
 	youtubeInfo(getYouTubeID(y_Ss[index], {fuzzy: false}) ? getYouTubeID(y_Ss[index], {fuzzy: false}) : 'NO ID', function(err, info){
@@ -261,9 +274,10 @@ function interval_checking(){
 				}else{//start [When the song is over]
 					if(QueueList[0]){
 						setCurrent(QueueList.shift().s_id, default_start_time);
+						io.emit('QueueBeenSet', QueueList);
 					}else if(SongList[CurrentSong.s_id+1]){
 						if(!SongList[CurrentSong.s_id+1]['removed']){ // and not removed
-							setCurrent(CurrentSong.s_id+1, default_start_time);
+							setCurrent(Math.floor(Math.random()*Object.keys(CurrentSong).length)+1, default_start_time);
 						}else{ // if is removed
 							CurrentSong.s_id++; // id++
 							CurrentSong.s_t = CurrentSong.now_Len+1;
@@ -278,3 +292,38 @@ function interval_checking(){
 	}
 }
 setInterval(interval_checking,1000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
