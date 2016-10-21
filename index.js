@@ -18,6 +18,7 @@ var http = require('http');
 var q = require('queue')({
 	concurrency: 30 // maximum async work at a time
 });
+process.setMaxListeners(0); // disable limitation
 
 var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
 
@@ -235,6 +236,14 @@ function s_reload(this_f_path){
 }
 function hardsong_load(this_f_path){
 	recursive(this_f_path, function(err, files){
+		if(err){
+			console.log(err);
+			return;
+		}
+		if(!files){
+			console.log('no mp3');
+			return;
+		}
 		// file order is not garenteed
 		files.forEach(function(file){
 			file = path.resolve(file);
