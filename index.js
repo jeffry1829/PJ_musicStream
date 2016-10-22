@@ -314,7 +314,7 @@ function interval_checking(){
 						io.emit('QueueBeenSet', QueueList);
 					}else if(SongList[CurrentSong.s_id+1]){
 						if(!SongList[CurrentSong.s_id+1]['removed']){ // and not removed
-							setCurrent(Math.floor(Math.random()*Object.keys(CurrentSong).length), default_start_time);
+							setCurrent(Math.floor(Math.random()*Object.keys(SongList).length), default_start_time);
 						}else{ // if is removed
 							CurrentSong.s_id++; // id++
 							CurrentSong.s_t = CurrentSong.now_Len+1;
