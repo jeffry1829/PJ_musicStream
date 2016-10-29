@@ -1,7 +1,7 @@
 #PJ\_musicStream  
 ##Installation  
 ```node index.js``` to run.  
-Deploied at port 3000  
+Deploied at port 3000 by default    
 edit /lib/config.js.example 's path and remove the .example    
 that's your song folder  
 put songs into it  
