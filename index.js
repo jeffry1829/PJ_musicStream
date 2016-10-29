@@ -275,7 +275,6 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 					    var re = new RegExp(replaceWhat, 'g');
 							var embbed_cover_path = picpath+'/'+re_file.replace(re, '!')+'.jpg';
 							console.log('embbed_cover_path => '+embbed_cover_path);
-							createIfNotExist(embbed_cover_path, '');
 							fs.writeFileSync(embbed_cover_path, new Buffer(tags.picture.data)); // not good, but for lower version of nodejs
 						}
 						embbed_cover_path = path.relative(picpath, embbed_cover_path);
@@ -338,8 +337,19 @@ function hardsong_load(this_f_path){
 			file = path.resolve(file);
 			re_file = path.relative(__dirname, file);
 			
-			if(path.basename(file) === 'cover.jpg' || path.basename(file) === 'cover1.jpg'){
-				SongList['dir_cover'][path.dirname(path.relative(songpath, file))] = '/songs/'+path.relative(songpath,file); // NEED CHECK!!! I DON'T KNOW IF RELATIVE WORKS!
+			if(path.basename(file).toLowerCase().match(/^cover.*\.jpg$/gi)){
+				var name = path.parse(file).name;
+				var ext = path.parse(file).ext;
+				var cut = name.replace(/.$/, '');
+				var nextIntStr;
+				if(isNaN(Number(name.match(/.$/)))){
+					nextIntStr = '1';
+				}else{
+					nextIntStr = String(Number(name.match(/.$/))+1)
+				}
+				if(!fs.existsSync(cut+nextIntStr+ext)){
+					SongList['dir_cover'][escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file)))] = '/songs/'+path.relative(songpath,file); // NEED CHECK!!! I DON'T KNOW IF RELATIVE WORKS!
+				}
 			}
 			
 			if(s_cache[re_file]){
