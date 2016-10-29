@@ -8,7 +8,7 @@ put songs into it
 and edit /web/lib/config.js.example 's domain name as well(remove .example as well)    
 Remember to add "http://"  
 For instance: http://example.com:3000  
-REMEMBER TO PUT "nocover.png" into your song folder  
+REMEMBER TO PUT "nocover.png" into your "song folder" (You can use the one I give you, or you can use your custom one)    
 ##Update  
 1. shutdown the server  
 2. git fetch  
