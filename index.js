@@ -37,7 +37,7 @@ songpath=path.resolve(songpath);
 var picpath=config['picpath'];
 picpath=path.resolve(picpath);
 var CurrentSong={};
-var SongList={};
+var SongList={dir_cover: {}};
 var QueueList=[];
 var tmp_s_no=0;
 var default_start_time = -3;
@@ -51,6 +51,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static(__dirname+'/web'));
 app.use('/songs',express.static(songpath));
+app.use('/embbedpics',express.static(picpath)); // add
 app.get('/', function(req, res){
 	res.sendFile(__dirname+'/web/index.html');
 })
@@ -266,10 +267,11 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							return;
 						}
 						if(tags.picture){
-							var embbed_cover_path = path.join(picpath, refile+'.jpg');
+							var embbed_cover_path = picpath+'/'+re_file.replace('/', '$')+'.jpg';
 							fs.writeFileSync(embbed_cover_path, tag.picture); // encode == utf-8
 						}
-						var cover_path = embbed_cover_path ? embbed_cover_path : fs.existsSync(path.join(file, 'cover.jpg')) ? path.join(file, 'cover.jpg') : fs.existsSync(path.join(file, 'cover1.jpg')) ? path.join(file, 'cover1.jpg') : path.join(__dirname, 'nocover.jpg')
+						embbed_cover_path = path.relative(picpath, embbed_cover_path);
+						var cover_path = embbed_cover_path ? '/embbedpics/'+embbed_cover_path : fs.existsSync(path.join(path.basename(file), 'cover.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover.jpg' : fs.existsSync(path.join(path.basename(file), 'cover1.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover1.jpg' : '/songs/'+'nocover.jpg' // relative from songpath
 						s_cache[re_file]['duration'] = duration;
 						s_cache[re_file]['cover_path'] = cover_path;
 						s_cache[re_file]['mtime'] = fs.statSync(file)['mtime'].getTime();
@@ -325,7 +327,12 @@ function hardsong_load(this_f_path){
 		// file order is not garenteed
 		files.forEach(function(file){
 			file = path.resolve(file);
-			re_file = path.relative(__dirname, file)
+			re_file = path.relative(__dirname, file);
+			
+			if(path.basename(file) === 'cover.jpg' || path.basename(file) === 'cover1.jpg'){
+				SongList['dir_cover'][path.dirname(path.relative(songpath, file))] = '/songs/'+path.relative(songpath,file); // NEED CHECK!!! I DON'T KNOW IF RELATIVE WORKS!
+			}
+			
 			if(s_cache[re_file]){
 				if(s_cache[re_file]['mtime'] === fs.statSync(file)['mtime'].getTime()){
 					jsmediatag_readOne(file, s_cache[re_file]['duration'], s_cache[re_file]['cover_path']);
