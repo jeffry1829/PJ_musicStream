@@ -19,8 +19,8 @@ var q = require('queue')({
 	concurrency: config['concurrency'] // maximum async work at a time
 });
 q.setMaxListeners(0); // disable limitation
-q.on('success', function(){
-	console.log('one song loaded');
+q.on('success', function(result){
+	console.log('one song loaded(heavy work)');
 	console.log('write caches...');
 	jsonfile.writeFileSync(s_cache_path, s_cache);
 });
@@ -320,7 +320,7 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							},
 							cover_path: cover_path
 						};
-						ok();
+						ok('don\'t need to writeFile');
 				}
 		  },
 		  onError: function(error){
@@ -369,8 +369,9 @@ function hardsong_load(this_f_path){
 			}else{
 				jsmediatag_readOne(file);
 			}
-			q.start(function(){ // write cache changes when empty
+			q.start(function(err){ // write cache changes when empty
 				console.log('q.start cb occured => will be called when the queue empties or when an error occurs.');
+				console.log('err=> '+err)
 			});
 		})
 	})
