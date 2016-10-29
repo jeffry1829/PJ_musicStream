@@ -20,9 +20,7 @@ var q = require('queue')({
 });
 q.setMaxListeners(0); // disable limitation
 q.on('success', function(result){
-	console.log('one song loaded(heavy work)');
-	console.log('write caches...');
-	jsonfile.writeFileSync(s_cache_path, s_cache);
+	console.log('one song loaded');
 });
 if(!fs.existsSync('./cached_pics')){
 	fs.mkdirSync('./cached_pics');
@@ -266,6 +264,9 @@ function load_one_youtube(y_Ss, index, this_f_path){
 function jsmediatag_readOne(file, duration, cover_path){ // two param types: only file(should be absolute) or all passed
 	var re_file = path.relative(__dirname, file);
 	q.push(function(ok){
+		
+		try{
+		
 		jsmediatags.read(file, {
 			onSuccess: function(result){
 				var tags = result.tags;
@@ -304,6 +305,8 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							},
 							cover_path: cover_path
 						};
+						console.log('write caches...');
+						jsonfile.writeFileSync(s_cache_path, s_cache);
 						ok();
 					});
 				}else{ // the duration and cover_path are passed parameters
@@ -320,7 +323,7 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							},
 							cover_path: cover_path
 						};
-						ok('don\'t need to writeFile');
+						ok();
 				}
 		  },
 		  onError: function(error){
@@ -328,6 +331,12 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 		    ok();
 		  }
 		});
+		
+		}catch(err){
+			console.log(err);
+			ok();
+		}
+		
 	})
 }
 function hardsong_load(this_f_path){
