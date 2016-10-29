@@ -27,7 +27,7 @@ if(!fs.existsSync('./cached_pics')){
 }
 
 
-var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
+var io = require('socket.io')(app.listen(config['port'])); // I really don't know why it works
 
 var y_config = path.resolve('./y_config.json');
 createIfNotExist(y_config, '[]')
@@ -271,7 +271,7 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							return;
 						}
 						if(tags.picture){
-							replaceWhat = path.sep.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+							var replaceWhat = path.sep.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 					    var re = new RegExp(replaceWhat, 'g');
 							var embbed_cover_path = picpath+'/'+re_file.replace(re, '!')+'.jpg';
 							console.log('embbed_cover_path => '+embbed_cover_path);

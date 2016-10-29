@@ -1,4 +1,5 @@
 module.exports = {
 		songpath: './songs',
-		picpath: './cached_pics'
+		picpath: './cached_pics',
+		port: '3000'
 }
