@@ -352,7 +352,7 @@ function hardsong_load(this_f_path){
 		// file order is not garenteed
 		files.forEach(function(file){
 			file = path.resolve(file);
-			re_file = path.relative(__dirname, file);
+			var re_file = path.relative(__dirname, file);
 			
 			if(path.basename(file).toLowerCase().match(/^cover.*\.jpg$/gi)){
 				var name = path.parse(file).name;
