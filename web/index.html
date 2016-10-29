@@ -3,7 +3,8 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>PJ_musicStream</title>
-	<link rel="stylesheet" href="lib/tocas.min.css">
+	<!-- <link rel="stylesheet" href="lib/tocas.min.css"> -->
+	<link rel="stylesheet" href="//cdn.rawgit.com/TeaMeow/TocasUI/master/dist/tocas.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="lib/config.js"></script>
 	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
@@ -232,9 +233,9 @@
 			$('#player')[0].volume = volume;
 			now_song_id=current.s_id
 			$('#s-id').text(current.s_id);
-			$('#s-title').text(current.s_name);
-			$('#s-artist').text(current.s_description.artist);
-			$('#s-album').text(current.s_description.album);
+			$('#s-title').text($.unescape(current.s_name));
+			$('#s-artist').text($.unescape(current.s_description.artist));
+			$('#s-album').text($.unescape(current.s_description.album));
 			$('#s-length').text(current.s_t);
 		}
 		function setYTPlayer(current){ // getCurrent Object
@@ -247,8 +248,8 @@
 			y_player.setVolume(volume*100);
 			now_song_id=current.s_id
 			$('#s-id').text(current.s_id);
-			$('#s-title').text(current.s_name);
-			$('#s-artist').text(current.s_description.owner);
+			$('#s-title').text($.unescape(current.s_name));
+			$('#s-artist').text($.unescape(current.s_description.owner));
 			$('#s-album').text('None');
 			$('#s-length').text(current.s_t);
 		}

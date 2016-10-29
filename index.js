@@ -25,12 +25,17 @@ q.on('success', function(){
 
 var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
 
-var y_config = './y_config.json';
+var y_config = path.resolve('./y_config.json');
 createIfNotExist(y_config, '[]')
 var y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : []; // init stat
+var s_cache_path = path.resolve('./s_cache.json');
+createIfNotExist(s_cache_path, '{}');
+var s_cache = jsonfile.readFileSync(s_cache_path) ? jsonfile.readFileSync(s_cache_path) : {};
 
 var songpath=config['songpath'];
 songpath=path.resolve(songpath);
+var picpath=config['picpath'];
+picpath=path.resolve(picpath);
 var CurrentSong={};
 var SongList={};
 var QueueList=[];
@@ -200,6 +205,14 @@ function addQueue(s_id, start_time){
 	QueueList.push(queueItem);
 	io.emit('QueueBeenSet', QueueList);
 }
+function s_reload(this_f_path){
+	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
+	if(y_Ss.length>=1){
+		load_one_youtube(y_Ss, 0, this_f_path);
+	}else{
+		hardsong_load(this_f_path);
+	}
+}
 function load_one_youtube(y_Ss, index, this_f_path){
 	youtubeInfo(getYouTubeID(y_Ss[index], {fuzzy: false}) ? getYouTubeID(y_Ss[index], {fuzzy: false}) : 'NO ID', function(err, info){
 		if(err){
@@ -239,13 +252,65 @@ function load_one_youtube(y_Ss, index, this_f_path){
 		}
 	});
 }
-function s_reload(this_f_path){
-	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
-	if(y_Ss.length>=1){
-		load_one_youtube(y_Ss, 0, this_f_path);
-	}else{
-		hardsong_load(this_f_path);
-	}
+function jsmediatag_readOne(file, duration, cover_path){ // two param types: only file(should be absolute) or all passed
+	var re_file = path.relative(__dirname, file);
+	q.push(function(ok){
+		jsmediatags.read(file, {
+			onSuccess: function(result){
+				var tags = result.tags;
+				if(!duration && !cover_path){
+					mp3duration(file, function(err, duration){
+						if(err){
+							console.log(err);
+							ok();
+							return;
+						}
+						if(tags.picture){
+							var embbed_cover_path = path.join(picpath, refile+'.jpg');
+							fs.writeFileSync(embbed_cover_path, tag.picture); // encode == utf-8
+						}
+						var cover_path = embbed_cover_path ? embbed_cover_path : fs.existsSync(path.join(file, 'cover.jpg')) ? path.join(file, 'cover.jpg') : fs.existsSync(path.join(file, 'cover1.jpg')) ? path.join(file, 'cover1.jpg') : path.join(__dirname, 'nocover.jpg')
+						s_cache[re_file]['duration'] = duration;
+						s_cache[re_file]['cover_path'] = cover_path;
+						s_cache[re_file]['mtime'] = fs.statSync(file)['mtime'].getTime();
+						SongList[tmp_s_no] = {
+							s_path: file,
+							s_name: escape(tags.title),
+							s_id: tmp_s_no++,
+							s_url: '/songs/'+path.relative(songpath,file),
+							s_t: duration,
+							s_type: escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file))), // new added property!
+							s_description: {
+								artist: escape(tags.artist),
+								album: escape(tags.album)
+							},
+							cover_path: cover_path
+						};
+						ok();
+					});
+				}else{ // the duration and cover_path are passed parameters
+					SongList[tmp_s_no] = {
+							s_path: file,
+							s_name: escape(tags.title),
+							s_id: tmp_s_no++,
+							s_url: '/songs/'+path.relative(songpath,file),
+							s_t: duration,
+							s_type: escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file))), // new added property!
+							s_description: {
+								artist: escape(tags.artist),
+								album: escape(tags.album)
+							},
+							cover_path: cover_path
+						};
+						ok();
+				}
+		  },
+		  onError: function(error){
+		    console.log(':(', error.type, error.info);
+		    ok();
+		  }
+		});
+	})
 }
 function hardsong_load(this_f_path){
 	recursive(this_f_path, function(err, files){
@@ -260,40 +325,21 @@ function hardsong_load(this_f_path){
 		// file order is not garenteed
 		files.forEach(function(file){
 			file = path.resolve(file);
-			q.push(function(ok){
-				jsmediatags.read(file, {
-					onSuccess: function(result){
-						var tags = result.tags;
-							mp3duration(file, function(err, duration){
-								if(err){
-									console.log(err);
-									ok();
-									return;
-								}
-								SongList[tmp_s_no] = {
-										s_path: file,
-										s_name: escape(tags.title), // why is there a "title" tag?!, it's not mentioned in the document!
-										s_id: tmp_s_no++,
-										s_url: '/songs/'+path.relative(songpath,file),
-										s_t: duration,
-										s_type: escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file))), // new added property!
-										s_description: {
-											artist: escape(tags.artist),
-											album: escape(tags.album)
-										}
-								};
-								ok();
-							});
-				  },
-				  onError: function(error){
-				    console.log(':(', error.type, error.info);
-				    ok();
-				  }
-				});
-			})
-			q.start(function(){
+			re_file = path.relative(__dirname, file)
+			if(s_cache[re_file]){
+				if(s_cache[re_file]['mtime'] === fs.statSync(file)['mtime'].getTime()){
+					jsmediatag_readOne(file, s_cache[re_file]['duration'], s_cache[re_file]['cover_path']);
+				}else{
+					jsmediatag_readOne(file);
+				}
+			}else{
+				jsmediatag_readOne(file);
+			}
+			q.start(function(){ // write cache changes when empty
 				console.log('q.start cb occured => will be called when the queue empties or when an error occurs.');
-			})
+				console.log('write caches...');
+				jsonfile.writeFileSync(s_cache_path, s_cache);
+			});
 		})
 	})
 }
