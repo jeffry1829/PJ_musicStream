@@ -81,8 +81,10 @@
 								if(index === 'dir_cover'){
 									return;
 								}
-								now_pic_url = value.cover_path
-								return false; //doc says this equals break
+								if(value.cover_path !== '/songs/nocover.png'){
+									now_pic_url = value.cover_path;
+									return false; //doc says this equals break
+								}
 							});
 							if(now_pic_url){
 								type_object[index]['dir_cover'] = now_pic_url;
@@ -91,9 +93,12 @@
 					});
 					$.each(type_object, function(index, value){
 						if(index !== 'Youtube'){
+							// NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! wait for new version tocas-ui image link
 							$('#s-list').append(' \
 								<div class="ts massive header">'+index+'</div> \
-								<img class="ts small image type-img" src="'+value.dir_cover+'"></img> \
+								<a class="type-img"> \
+									<img class="ts small image" src="'+value.dir_cover+'"></img> \
+								</a> \
 							');
 						}else{
 							$('#s-list').append(' \
