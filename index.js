@@ -22,6 +22,10 @@ q.setMaxListeners(0); // disable limitation
 q.on('success', function(){
 	console.log('one song loaded');
 });
+if(!fs.existsSync('./cached_pics')){
+	fs.mkdirSync('./cached_pics');
+}
+
 
 var io = require('socket.io')(app.listen(3000)); // I really don't know why it works
 
@@ -267,11 +271,16 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							return;
 						}
 						if(tags.picture){
-							var embbed_cover_path = picpath+'/'+re_file.replace('/', '$')+'.jpg';
-							fs.writeFileSync(embbed_cover_path, tag.picture); // encode == utf-8
+							replaceWhat = path.sep.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+					    var re = new RegExp(replaceWhat, 'g');
+							var embbed_cover_path = picpath+'/'+re_file.replace(re, '!')+'.jpg';
+							console.log('embbed_cover_path => '+embbed_cover_path);
+							createIfNotExist(embbed_cover_path, '');
+							fs.writeFileSync(embbed_cover_path, new Buffer(tags.picture.data)); // not good, but for lower version of nodejs
 						}
 						embbed_cover_path = path.relative(picpath, embbed_cover_path);
-						var cover_path = embbed_cover_path ? '/embbedpics/'+embbed_cover_path : fs.existsSync(path.join(path.basename(file), 'cover.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover.jpg' : fs.existsSync(path.join(path.basename(file), 'cover1.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover1.jpg' : '/songs/'+'nocover.jpg' // relative from songpath
+						var cover_path = embbed_cover_path ? '/embbedpics/'+embbed_cover_path : fs.existsSync(path.join(path.basename(file), 'cover.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover.jpg' : fs.existsSync(path.join(path.basename(file), 'cover1.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover1.jpg' : '/songs/'+'nocover.png' // relative from songpath
+						s_cache[re_file] = {}
 						s_cache[re_file]['duration'] = duration;
 						s_cache[re_file]['cover_path'] = cover_path;
 						s_cache[re_file]['mtime'] = fs.statSync(file)['mtime'].getTime();

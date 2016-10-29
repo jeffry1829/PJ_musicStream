@@ -3,3 +3,5 @@
 node_modules/**
 songs/**
 y_config.json
+s_cache.json
+cached_pics/**

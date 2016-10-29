@@ -56,6 +56,9 @@
 				success: function(res){
 					var type_object = {};
 					$.each(res, function(index, value){
+						if(index === 'dir_cover'){
+							return;
+						}
 						if(!type_object[value.s_type]){
 							type_object[value.s_type] = {};
 						}
@@ -64,18 +67,21 @@
 						if(res['dir_cover'][value.s_type]){
 							type_object[value.s_type]['dir_cover'] = res['dir_cover'][value.s_type]; // relative path from songpath
 						}else{
-							type_object[value.s_type]['dir_cover'] = '/songs/nocover.jpg'
+							type_object[value.s_type]['dir_cover'] = '/songs/nocover.png'
 						}
 					});
 					
 					$.each(type_object, function(index, value){
 						$('#s-list').append(' \
 							<div class="ts massive header">'+index+'</div> \
-							<img id="type-img" class="ts small image"  src="+value.dir_cover+"></img> \
+							<img id="type-img" class="ts small image"  src="'+value.dir_cover+'"></img> \
 						');
 						// If type === Youtube, add remove button
 						if(index === 'Youtube'){
 							$.each(value, function(index, value){
+								if(index === 'dir_cover'){
+									return;
+								}
 								if(!value.removed){ // if not removed
 									$('#s-list').append(' \
 											<div class="item s-list-item"> \
@@ -90,9 +96,12 @@
 							});
 						}else{
 							$.each(value, function(index, value){
+								if(index === 'dir_cover'){
+									return;
+								}
 								$('#s-list').append(' \
 										<div class="item s-list-item"> \
-											<img class="ts avatar image" src="+value.cover_path+"> \
+											<img class="ts avatar image" src="'+value.cover_path+'"> \
 											<div class="header">'+value.s_id+' '+value.s_name+'</div> \
 											'+value.s_t+'sec \
 										</div> \
