@@ -5,3 +5,5 @@ songs/**
 y_config.json
 s_cache.json
 cached_pics/**
+lib/config.js
+web/lib/config.js

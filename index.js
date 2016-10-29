@@ -16,11 +16,13 @@ var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
 var q = require('queue')({
-	concurrency: 100 // maximum async work at a time
+	concurrency: config['concurrency'] // maximum async work at a time
 });
 q.setMaxListeners(0); // disable limitation
 q.on('success', function(){
 	console.log('one song loaded');
+	console.log('write caches...');
+	jsonfile.writeFileSync(s_cache_path, s_cache);
 });
 if(!fs.existsSync('./cached_pics')){
 	fs.mkdirSync('./cached_pics');
@@ -54,8 +56,12 @@ app.use(bodyParser.urlencoded({
 	extended: true
 }));
 app.use(express.static(__dirname+'/web'));
-app.use('/songs',express.static(songpath));
-app.use('/embbedpics',express.static(picpath)); // add
+app.use('/songs',express.static(songpath, {
+	dotfiles: "allow"
+}));
+app.use('/embbedpics',express.static(picpath, {
+	dotfiles: "allow"
+}));
 app.get('/', function(req, res){
 	res.sendFile(__dirname+'/web/index.html');
 })
@@ -278,6 +284,7 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							fs.writeFileSync(embbed_cover_path, new Buffer(tags.picture.data)); // not good, but for lower version of nodejs
 						}
 						embbed_cover_path = path.relative(picpath, embbed_cover_path);
+						console.log('relatived embbed_cover => '+embbed_cover_path)
 						var cover_path = embbed_cover_path ? '/embbedpics/'+embbed_cover_path : fs.existsSync(path.join(path.basename(file), 'cover.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover.jpg' : fs.existsSync(path.join(path.basename(file), 'cover1.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover1.jpg' : '/songs/'+'nocover.png' // relative from songpath
 						s_cache[re_file] = {}
 						s_cache[re_file]['duration'] = duration;
@@ -363,8 +370,6 @@ function hardsong_load(this_f_path){
 			}
 			q.start(function(){ // write cache changes when empty
 				console.log('q.start cb occured => will be called when the queue empties or when an error occurs.');
-				console.log('write caches...');
-				jsonfile.writeFileSync(s_cache_path, s_cache);
 			});
 		})
 	})
