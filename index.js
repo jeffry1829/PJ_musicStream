@@ -252,7 +252,8 @@ function load_one_youtube(y_Ss, index, this_f_path){
 				s_type: 'Youtube',
 				s_description: {
 					owner: escape(info.owner) // !!! owner !!!
-				}
+				},
+				cover_path: '/songs/nocover.png'
 		};
 		
 		//i'm trying to make it sync
