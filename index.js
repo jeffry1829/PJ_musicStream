@@ -25,7 +25,9 @@ q.on('success', function(result){
 if(!fs.existsSync('./cached_pics')){
 	fs.mkdirSync('./cached_pics');
 }
-
+process.on('uncaughtException', function(err){
+	console.log('uncaughtException event! => '+err);
+})
 
 var io = require('socket.io')(app.listen(config['port'])); // I really don't know why it works
 
@@ -264,14 +266,14 @@ function load_one_youtube(y_Ss, index, this_f_path){
 function jsmediatag_readOne(file, duration, cover_path){ // two param types: only file(should be absolute) or all passed
 	var re_file = path.relative(__dirname, file);
 	q.push(function(ok){
-		
-		try{
-		
 		jsmediatags.read(file, {
 			onSuccess: function(result){
 				var tags = result.tags;
 				if(!duration && !cover_path){
 					mp3duration(file, function(err, duration){
+						
+					try{
+						
 						if(err){
 							console.log(err);
 							ok();
@@ -291,6 +293,7 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 						s_cache[re_file] = {}
 						s_cache[re_file]['duration'] = duration;
 						s_cache[re_file]['cover_path'] = cover_path;
+						
 						s_cache[re_file]['mtime'] = fs.statSync(file)['mtime'].getTime();
 						SongList[tmp_s_no] = {
 							s_path: file,
@@ -308,6 +311,10 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 						console.log('write caches...');
 						jsonfile.writeFileSync(s_cache_path, s_cache);
 						ok();
+						
+					}catch(err){
+						console.log('catch err => '+err);
+					}
 					});
 				}else{ // the duration and cover_path are passed parameters
 					SongList[tmp_s_no] = {
@@ -331,12 +338,6 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 		    ok();
 		  }
 		});
-		
-		}catch(err){
-			console.log(err);
-			ok();
-		}
-		
 	})
 }
 function hardsong_load(this_f_path){
