@@ -202,7 +202,10 @@
 			QueueList.forEach(function(value, index){
 				$('#queue-list').append(' \
 					<div class="item queue-item" style="justify-content: center;"> \
-						'+index+' ('+value.s_id+' '+value.s_name+' '+value.s_t+'sec) \
+						<img class="ts avatar image" src="'+value.cover_path+'"> \
+						<content> \
+							'+index+' ('+value.s_id+' '+value.s_name+' '+value.s_t+'sec) \
+						</content> \
 						<button class="ts icon button mini compact negative queue-item-remove"> \
 							<i class="icon remove"></i> \
 						</button> \
@@ -223,7 +226,10 @@
 					res.forEach(function(value, index){
 						$('#queue-list').append(' \
 							<div class="item queue-item" style="justify-content: center;"> \
-								'+index+' ('+value.s_id+' '+value.s_name+' '+value.s_t+'sec) \
+								<img class="ts avatar image" src="'+value.cover_path+'"> \
+								<content> \
+									'+index+' ('+value.s_id+' '+value.s_name+' '+value.s_t+'sec) \
+								</content> \
 								<button class="ts icon button mini compact negative queue-item-remove"> \
 									<i class="icon remove"></i> \
 								</button> \
