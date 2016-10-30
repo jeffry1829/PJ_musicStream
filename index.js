@@ -27,6 +27,7 @@ if(!fs.existsSync('./cached_pics')){
 }
 process.on('uncaughtException', function(err){
 	console.log('uncaughtException event! => '+err);
+	console.log(err.stack)
 })
 
 var io = require('socket.io')(app.listen(config['port'])); // I really don't know why it works
@@ -314,6 +315,7 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 						
 					}catch(err){
 						console.log('catch err => '+err);
+						console.log(err.stack)
 					}
 					});
 				}else{ // the duration and cover_path are passed parameters
