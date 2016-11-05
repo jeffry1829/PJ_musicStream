@@ -16,7 +16,7 @@ var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
 var q = require('queue')({
-	concurrency: config['concurrency'] // maximum async work at a time
+	concurrency: config.concurrency // maximum async work at a time
 });
 q.setMaxListeners(0); // disable limitation
 q.on('success', function(result){
@@ -27,21 +27,21 @@ if(!fs.existsSync('./cached_pics')){
 }
 process.on('uncaughtException', function(err){
 	console.log('uncaughtException event! => '+err);
-	console.log(err.stack)
-})
+	console.log(err.stack);
+});
 
-var io = require('socket.io')(app.listen(config['port'])); // I really don't know why it works
+var io = require('socket.io')(app.listen(config.port)); // I really don't know why it works
 
 var y_config = path.resolve('./y_config.json');
-createIfNotExist(y_config, '[]')
+createIfNotExist(y_config, '[]');
 var y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : []; // init stat
 var s_cache_path = path.resolve('./s_cache.json');
 createIfNotExist(s_cache_path, '{}');
 var s_cache = jsonfile.readFileSync(s_cache_path) ? jsonfile.readFileSync(s_cache_path) : {};
 
-var songpath=config['songpath'];
+var songpath=config.songpath;
 songpath=path.resolve(songpath);
-var picpath=config['picpath'];
+var picpath=config.picpath;
 picpath=path.resolve(picpath);
 var CurrentSong={};
 var SongList={dir_cover: {}};
@@ -65,7 +65,7 @@ app.use('/embbedpics',express.static(picpath, {
 }));
 app.get('/', function(req, res){
 	res.sendFile(__dirname+'/web/index.html');
-})
+});
 app.post('/getCurrent',function(req, res){
 	res.json(CurrentSong);
 });
@@ -167,8 +167,8 @@ io.on('connection', function(socket){
 });
 
 function removeYoutube(youtube_s_id){
-	y_Ss.splice(y_Ss.indexOf(SongList[youtube_s_id]['y_url']), 1);
-	SongList[youtube_s_id]['removed'] = true // delete this s_id !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	y_Ss.splice(y_Ss.indexOf(SongList[youtube_s_id].y_url), 1);
+	SongList[youtube_s_id].removed = true; // delete this s_id !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	jsonfile.writeFileSync(y_config, y_Ss);
 }
 function forcePlay(queue_index){
@@ -188,7 +188,7 @@ function setCurrent(s_id, start_time){
 	if(!s_id && s_id !== 0){
 		s_id=0;
 	}
-	if(SongList[s_id]['removed']){
+	if(SongList[s_id].removed){
 		CurrentSong.s_id++; // id++
 		CurrentSong.s_t = CurrentSong.now_Len+1;
 		interval_checking();
@@ -198,7 +198,7 @@ function setCurrent(s_id, start_time){
 	CurrentSong = {};
 	CurrentSong = Object.assign(CurrentSong, SongList[s_id]);
 	CurrentSong.now_Len = start_time;
-	delete CurrentSong['s_path'];
+	delete CurrentSong.s_path;
 	
 	console.log('setCurrent => CurrentSong');
 	console.dir(CurrentSong);
@@ -211,7 +211,7 @@ function addQueue(s_id, start_time){
 	
 	var queueItem = {};
 	Object.assign(queueItem, SongList[s_id]);
-	delete queueItem['s_path'];
+	delete queueItem.s_path;
 	queueItem.s_id = s_id;
 	queueItem.start_time = start_time;
 	QueueList.push(queueItem);
@@ -234,9 +234,9 @@ function load_one_youtube(y_Ss, index, this_f_path){
 				console.log(y_Ss.length+', '+index);
 				console.log('load_one_youtube => err => y_Ss[index]');
 				console.log(y_Ss[index]);
-				load_one_youtube(y_Ss, index+1, this_f_path)
+				load_one_youtube(y_Ss, index+1, this_f_path);
 			}else{
-				hardsong_load(this_f_path)
+				hardsong_load(this_f_path);
 			}
 			return;
 		}
@@ -259,9 +259,9 @@ function load_one_youtube(y_Ss, index, this_f_path){
 		//i'm trying to make it sync
 		if(y_Ss.length-1 >= index+1){
 			console.log('load_one_youtube => recall!');
-			load_one_youtube(y_Ss, index+1, this_f_path)
+			load_one_youtube(y_Ss, index+1, this_f_path);
 		}else{
-			hardsong_load(this_f_path)
+			hardsong_load(this_f_path);
 		}
 	});
 }
@@ -281,22 +281,23 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 							ok();
 							return;
 						}
+						var embbed_cover_path = null;
 						if(tags.picture){
 							var replaceWhat = path.sep.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-					    var re = new RegExp(replaceWhat, 'g');
-							var embbed_cover_path = picpath+'/'+re_file.replace(re, '!')+'.jpg';
+					    	var re = new RegExp(replaceWhat, 'g');
+							embbed_cover_path = picpath+'/'+re_file.replace(re, '!')+'.jpg';
 							console.log('embbed_cover_path => '+embbed_cover_path);
 							fs.writeFileSync(embbed_cover_path, new Buffer(tags.picture.data)); // not good, but for lower version of nodejs
 							embbed_cover_path = path.relative(picpath, embbed_cover_path);
 						}else{}// no picture
 						
-						console.log('relatived embbed_cover => '+embbed_cover_path)
-						var cover_path = embbed_cover_path ? '/embbedpics/'+embbed_cover_path : fs.existsSync(path.join(path.basename(file), 'cover.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover.jpg' : fs.existsSync(path.join(path.basename(file), 'cover1.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover1.jpg' : '/songs/'+'nocover.png' // relative from songpath
-						s_cache[re_file] = {}
-						s_cache[re_file]['duration'] = duration;
-						s_cache[re_file]['cover_path'] = cover_path;
+						console.log('relatived embbed_cover => ' + embbed_cover_path);
+						var cover_path = embbed_cover_path ? '/embbedpics/'+embbed_cover_path : fs.existsSync(path.join(path.basename(file), 'cover.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover.jpg' : fs.existsSync(path.join(path.basename(file), 'cover1.jpg')) ? '/songs/'+path.relative(songpath,path.basename(file))+'/cover1.jpg' : '/songs/'+'nocover.png'; // relative from songpath
+						s_cache[re_file] = {};
+						s_cache[re_file].duration = duration;
+						s_cache[re_file].cover_path = cover_path;
 						
-						s_cache[re_file]['mtime'] = fs.statSync(file)['mtime'].getTime();
+						s_cache[re_file].mtime = fs.statSync(file).mtime.getTime();
 						SongList[tmp_s_no] = {
 							s_path: file,
 							s_name: escape(tags.title),
@@ -314,9 +315,9 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 						jsonfile.writeFileSync(s_cache_path, s_cache);
 						ok();
 						
-					}catch(err){
-						console.log('catch err => '+err);
-						console.log(err.stack)
+					}catch(err_){
+						console.log('catch err => '+err_);
+						console.log(err_.stack);
 					}
 					});
 				}else{ // the duration and cover_path are passed parameters
@@ -341,7 +342,7 @@ function jsmediatag_readOne(file, duration, cover_path){ // two param types: onl
 		    ok();
 		  }
 		});
-	})
+	});
 }
 function hardsong_load(this_f_path){
 	recursive(this_f_path, function(err, files){
@@ -366,16 +367,16 @@ function hardsong_load(this_f_path){
 				if(isNaN(Number(name.match(/.$/)))){
 					nextIntStr = '1';
 				}else{
-					nextIntStr = String(Number(name.match(/.$/))+1)
+					nextIntStr = String(Number(name.match(/.$/))+1);
 				}
 				if(!fs.existsSync(cut+nextIntStr+ext)){
-					SongList['dir_cover'][escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file)))] = '/songs/'+path.relative(songpath,file); // NEED CHECK!!! I DON'T KNOW IF RELATIVE WORKS!
+					SongList.dir_cover[escape(path.dirname(path.relative(songpath,file)) === '.' ? 'ROOT' : path.dirname(path.relative(songpath,file)))] = '/songs/'+path.relative(songpath,file); // NEED CHECK!!! I DON'T KNOW IF RELATIVE WORKS!
 				}
 			}
 			
 			if(s_cache[re_file]){
-				if(s_cache[re_file]['mtime'] === fs.statSync(file)['mtime'].getTime()){
-					jsmediatag_readOne(file, s_cache[re_file]['duration'], s_cache[re_file]['cover_path']);
+				if(s_cache[re_file].mtime === fs.statSync(file).mtime.getTime()){
+					jsmediatag_readOne(file, s_cache[re_file].duration, s_cache[re_file].cover_path);
 				}else{
 					jsmediatag_readOne(file);
 				}
@@ -384,10 +385,10 @@ function hardsong_load(this_f_path){
 			}
 			q.start(function(err){ // write cache changes when empty
 				console.log('q.start cb occured => will be called when the queue empties or when an error occurs.');
-				console.log('err=> '+err)
+				console.log('err=> '+err);
 			});
-		})
-	})
+		});
+	});
 }
 function START(){
 	s_reload(songpath);
@@ -405,7 +406,7 @@ function interval_checking(){
 						setCurrent(QueueList.shift().s_id, default_start_time);
 						io.emit('QueueBeenSet', QueueList);
 					}else if(SongList[CurrentSong.s_id+1]){
-						if(!SongList[CurrentSong.s_id+1]['removed']){ // and not removed
+						if(!SongList[CurrentSong.s_id+1].removed){ // and not removed
 							setCurrent(Math.floor(Math.random()*(Object.keys(SongList).length-1)), default_start_time);
 						}else{ // if is removed
 							CurrentSong.s_id++; // id++
