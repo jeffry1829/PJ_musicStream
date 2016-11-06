@@ -293,6 +293,7 @@
 			$('#s-artist').text(unescape(current.s_description.artist));
 			$('#s-album').text(unescape(current.s_description.album));
 			$('#s-length').text(current.s_t);
+			$('#img-above-player').attr('src', current.cover_path);
 		}
 		function setYTPlayer(current){ // getCurrent Object
 			$('#player')[0].pause();
@@ -450,6 +451,7 @@
 			</div>
 			<button class="ts fluid top attached button" id="global-play-button">Global Play</button>
 			<div style="text-align: center;">
+				<img id="img-above-player" src="" hide />
 				<video controls preload="none" id="player"></video>
 				<div id="y-player"></div>
 			</div>

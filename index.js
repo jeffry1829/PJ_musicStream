@@ -202,7 +202,10 @@ function setCurrent(s_id, start_time){
 		interval_checking();
 		return;
 	}
-	
+	if(!SongList[s_id]){
+		console.log('setCurrent => no this song');
+		randomNext();
+	}
 	CurrentSong = {};
 	CurrentSong = Object.assign(CurrentSong, SongList[s_id]);
 	CurrentSong.now_Len = start_time;
