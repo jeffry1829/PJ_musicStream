@@ -93,6 +93,10 @@ app.post('/forcePlay', function(req, res){
 	io.emit('QueueBeenSet', QueueList);
 	res.end();
 });
+app.get('/randomNext', function(req, res){
+	randomNext();
+	res.end();
+});
 app.post('/removeQueue', function(req, res){
 	removeQueue(req.body.queue_index);
 	io.emit('QueueBeenSet', QueueList);
@@ -136,7 +140,8 @@ app.post('/addYoutube', function(req, res){
 					s_type: 'Youtube',
 					s_description: {
 						owner: info.owner // !!! owner !!!
-					}
+					},
+					cover_path: '/songs/nocover.png'
 			};
 			res.json({message: 'why should i add json here'});
 		});
@@ -166,6 +171,9 @@ io.on('connection', function(socket){
 	
 });
 
+function randomNext(){
+	setCurrent(Math.floor(Math.random()*(Object.keys(SongList).length-1)), default_start_time);
+}
 function removeYoutube(youtube_s_id){
 	y_Ss.splice(y_Ss.indexOf(SongList[youtube_s_id].y_url), 1);
 	SongList[youtube_s_id].removed = true; // delete this s_id !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -407,7 +415,7 @@ function interval_checking(){
 						io.emit('QueueBeenSet', QueueList);
 					}else if(SongList[CurrentSong.s_id+1]){
 						if(!SongList[CurrentSong.s_id+1].removed){ // and not removed
-							setCurrent(Math.floor(Math.random()*(Object.keys(SongList).length-1)), default_start_time);
+							randomNext();
 						}else{ // if is removed
 							CurrentSong.s_id++; // id++
 							CurrentSong.s_t = CurrentSong.now_Len+1;

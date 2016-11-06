@@ -405,7 +405,16 @@
 						console.log(xhr);
 					}
 				})
-			})
+			});
+			$('#random-next-button').click(function(){
+				$.ajax({
+					type: 'GET',
+					url: domain+'/randomNext',
+					error: function(xhr){
+						console.log(xhr);
+					}
+				})
+			});
 		}
 		function onYouTubeIframeAPIReady(){
 			console.log('onYouTubeIframeAPIReady in!')
@@ -454,6 +463,7 @@
     			<input type="text" placeholder="Please input youtube url"  id="y-url-input">
     			<i class="plus icon" id="addicon"></i>
 			</div>
+			<button class="ts button" id="random-next-button">random next song</button>
 			<div class="ts very narrow container segment">
 				Id:<div id="s-id"></div>
 				Title:<div id="s-title"></div>
