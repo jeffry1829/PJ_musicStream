@@ -357,6 +357,7 @@
 		function setYTPlayer(current){ // getCurrent Object
 			$('#player')[0].pause();
 			$('#player').hide();
+			$('#b-player')[0].pause();
 			$('#b-player').hide();
 			$('#y-player').show();
 			y_player.loadVideoById(current['y_id'], current.now_Len, 'low');
@@ -373,7 +374,7 @@
 		}
 		function setBIPlayer(current){
 			y_player.pauseVideo();
-			$('#player')[0].pause();			
+			$('#player')[0].pause();
 			$('#player').hide();
 			$('#y-player').hide();
 			$('#b-player').show();
