@@ -15,6 +15,7 @@ var youtubeInfo = require('youtube-info');
 var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
+var bilibili_detail = require('./lib/bilibili_detail');
 var q = require('queue')({
 	concurrency: config.concurrency // maximum async work at a time
 });
@@ -35,6 +36,11 @@ var io = require('socket.io')(app.listen(config.port)); // I really don't know w
 var y_config = path.resolve('./y_config.json');
 createIfNotExist(y_config, '[]');
 var y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : []; // init stat
+
+var b_config = path.resolve('./b_config.json');
+createIfNotExist(b_config, '[]');
+var b_Ss = jsonfile.readFileSync(b_config) ? jsonfile.readFileSync(b_config) : [];
+
 var s_cache_path = path.resolve('./s_cache.json');
 createIfNotExist(s_cache_path, '{}');
 var s_cache = jsonfile.readFileSync(s_cache_path) ? jsonfile.readFileSync(s_cache_path) : {};
@@ -147,7 +153,36 @@ app.post('/addYoutube', function(req, res){
 		});
 	}
 });
-
+app.post('/addBilibili', function(req, res){
+	var b_av = req.body.b_av;
+	if(b_Ss.indexOf(b_av) === -1){
+		b_Ss.push(b_av);
+		jsonfile.writeFileSync(b_config, b_Ss);
+		var b_detail = bilibili_detail(b_av); // Sync, may block(?)
+		if(b_detail instanceof Error){
+			console.log(b_detail.message);
+			console.log(b_detail.stack);
+			res.end();
+			return;
+		}else{
+			SongList[tmp_s_no] = {
+				s_path: false,
+				s_name: escape(b_detail.title),
+				s_id: tmp_s_no++,
+				b_av: b_av,
+				s_t: b_detail.time,
+				s_type: 'Bilibili',
+				b_mp4: b_detail.mp4,
+				cover_path: b_detail.img
+			};
+			res.json({message: 'why should i add json here'});
+		}
+	}
+});
+app.post('/removeBilibili', function(req, res){
+	removeBilibili(req.body.bilibili_s_id);
+	res.json({message: 'i really dont know why i should add a json here'});
+});
 io.on('connection', function(socket){
 	online_count++;
 	io.emit('online_count', {online_count: online_count});
@@ -176,8 +211,13 @@ function randomNext(){
 }
 function removeYoutube(youtube_s_id){
 	y_Ss.splice(y_Ss.indexOf(SongList[youtube_s_id].y_url), 1);
-	SongList[youtube_s_id].removed = true; // delete this s_id !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	SongList[youtube_s_id].removed = true;
 	jsonfile.writeFileSync(y_config, y_Ss);
+}
+function removeBilibili(s_id){
+	b_Ss.splice(b_Ss.indexOf(SongList[s_id].b_av), 1);
+	SongList[s_id].removed = true;
+	jsonfile.writeFileSync(b_config, b_Ss);
 }
 function forcePlay(queue_index){
 	setCurrent(QueueList[queue_index].s_id, QueueList[queue_index].start_time);
@@ -229,7 +269,7 @@ function addQueue(s_id, start_time){
 	io.emit('QueueBeenSet', QueueList);
 }
 function s_reload(this_f_path){
-	y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : [];
+	loadBilibili(); // Sync
 	if(y_Ss.length>=1){
 		load_one_youtube(y_Ss, 0, this_f_path);
 	}else{
@@ -399,6 +439,27 @@ function hardsong_load(this_f_path){
 				console.log('err=> '+err);
 			});
 		});
+	});
+}
+function loadBilibili(){
+	b_Ss.forEach(function(b_av){
+		var b_detail = bilibili_detail(b_av); // Sync, may block(?)
+		if(b_detail instanceof Error){
+			console.log(b_detail.message);
+			console.log(b_detail.stack);
+			res.json(new Error('some error'));
+		}else{
+			SongList[tmp_s_no] = {
+				s_path: false,
+				s_name: escape(b_detail.title),
+				s_id: tmp_s_no++,
+				b_av: b_av,
+				s_t: b_detail.time,
+				s_type: 'Bilibili',
+				b_mp4: b_detail.mp4,
+				cover_path: b_detail.img
+			};
+		}
 	});
 }
 function START(){

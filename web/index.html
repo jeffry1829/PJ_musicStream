@@ -47,6 +47,24 @@
 				}
 			})
 		}
+		function b_av_add(){
+			$.ajax({
+				type: 'POST',
+				url: domain+'/addBilibili',
+				dataType: 'json',
+				data: {
+					b_av: $(this).val()
+				},
+				success: function(res){
+					// res doesn't matter
+					$('#b-av-input').val('')
+					updateSongList(); 
+				},
+				error: function(xhr){
+					console.log(xhr);
+				}
+			})
+		}
 		function img_click(){
 			$(this).nextUntil('.ts.massive.header').toggle();
 		}
@@ -92,17 +110,17 @@
 						}
 					});
 					$.each(type_object, function(index, value){
-						if(index !== 'Youtube'){
+						if(index === 'Youtube' || index === 'Bilibili'){
+							$('#s-list').append(' \
+								<div class="ts massive header">'+index+'</div> \
+							');
+						}else{
 							// NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! wait for new version tocas-ui image link
 							$('#s-list').append(' \
 								<div class="ts massive header">'+index+'</div> \
 								<a class="type-img"> \
 									<img class="ts small image" src="'+value.dir_cover+'"></img> \
 								</a> \
-							');
-						}else{
-							$('#s-list').append(' \
-								<div class="ts massive header">'+index+'</div> \
 							');
 						}
 						
@@ -118,6 +136,26 @@
 												<div class="header">'+value.s_id+' '+value.s_name+'</div> \
 												'+value.s_t+'sec \
 												<button class="ts icon button mini compact negative youtube-item-remove"> \
+													<i class="icon remove"></i> \
+												</button> \
+											</div> \
+									');
+								}
+							});
+						}else if(index === 'Bilibili'){
+							$.each(value, function(index, value){
+								if(index === 'dir_cover'){
+									return;
+								}
+								if(!value.removed){ // if not removed
+									$('#s-list').append(' \
+											<div class="item s-list-item"> \
+												<img class="ts avatar image" src="'+value.cover_path+'"> \
+												<content> \
+													<div class="header">'+value.s_id+' '+value.s_name+'</div> \
+													'+value.s_t+'sec \
+												</content> \
+												<button class="ts icon button mini compact negative bilibili-item-remove"> \
 													<i class="icon remove"></i> \
 												</button> \
 											</div> \
@@ -144,6 +182,7 @@
 					$('.type-img').nextUntil('.ts.massive.header').hide()
 					$('.s-list-item').click(s_list_item_click);
 					$('.youtube-item-remove').click(youtube_item_remove);
+					$('.bilibili-item-remove').click(bilibili_item_remove);
 					$('.type-img').click(img_click);
 				},
 				error: function(xhr){
@@ -166,7 +205,24 @@
 				error: function(xhr){
 					console.log(xhr);
 				}
-			})
+			});
+		}
+		function bilibili_item_remove(e){
+			e.stopPropagation(); // only for remove button
+			$.ajax({
+				type: 'POST',
+				url: domain+'/removeBilibili',
+				dataType: 'json',
+				data: {
+					youtube_s_id: Number($(this).parent()[0].innerText.split(' ')[0])
+				},
+				success: function(res){
+					updateSongList();
+				},
+				error: function(xhr){
+					console.log(xhr);
+				}
+			});
 		}
 		function s_list_item_click(){
 			/*
@@ -283,6 +339,8 @@
 			y_player.pauseVideo();
 			$('#player').show();
 			$('#y-player').hide();
+			$('#b-player')[0].pause();
+			$('#b-player').hide();
 			$('#player').attr('src', current.s_url);
 			$('#player')[0].currentTime = current.now_Len;
 			$('#player')[0].play();
@@ -299,6 +357,7 @@
 		function setYTPlayer(current){ // getCurrent Object
 			$('#player')[0].pause();
 			$('#player').hide();
+			$('#b-player').hide();
 			$('#y-player').show();
 			y_player.loadVideoById(current['y_id'], current.now_Len, 'low');
 			y_player.seekTo(current.now_Len, true);
@@ -312,6 +371,25 @@
 			$('#s-length').text(current.s_t);
 			$('#img-above-player').hide();
 		}
+		function setBIPlayer(current){
+			y_player.pauseVideo();
+			$('#player')[0].pause();			
+			$('#player').hide();
+			$('#y-player').hide();
+			$('#b-player').show();
+			$('#b-player').attr('src', current.b_mp4);
+			$('#b-player')[0].currentTime = current.now_Len;
+			$('#b-player')[0].play();
+			$('#b-player')[0].volume = volume;
+			now_song_id=current.s_id
+			$('#s-id').text(current.s_id);
+			$('#s-title').text(unescape(current.s_name));
+			$('#s-artist').text('None');
+			$('#s-album').text('None');
+			$('#s-length').text(current.s_t);
+			$('#img-above-player').show();
+			$('#img-above-player').attr('src', current.cover_path);
+		}
 		function LoadPlayer_wholeProcess(){
 			$.ajax({
 				type: 'POST',
@@ -324,8 +402,10 @@
 						console.log('songs are not ready yet');
 						return;
 					}else{
-						if(res['y_url']){
+						if(res.y_url){
 							setYTPlayer(res);
+						}else if(res.b_av){
+							setBIPlayer(res);
 						}else{
 							setHTMLPlayer(res);
 						}
@@ -390,7 +470,14 @@
 					$(this).submit();
 				}
 			});
+			$('#b-av-input').keypress(function(e){
+				var code = (e.keyCode ? e.keyCode : e.which);
+				if(code === 13){
+					$(this).submit();
+				}
+			});
 			$('#y-url-input').submit(y_url_add);
+			$('#b-av-input').submit(b_av_add);
 			$('#global-pause-button').click(function(){
 				$.ajax({
 					type: 'POST',
@@ -459,6 +546,7 @@
 				<br />
 				<audio controls preload="none" id="player"></audio>
 				<div id="y-player"></div>
+				<video id="b-player"></video>
 			</div>
 			<div class="ts label right floated huge">Online Count
     			<div class="detail" id="online-count-number"></div>
@@ -468,8 +556,14 @@
 		<div class="eleven wide column ts raised segment">
 			<div class="ts icon input">
     			<input type="text" placeholder="Please input youtube url"  id="y-url-input">
-    			<i class="plus icon" id="addicon"></i>
+    			<i class="plus icon"></i>
 			</div>
+			<br />
+			<div class="ts icon input">
+    			<input type="text" placeholder="Please input bilibili url"  id="b-av-input">
+    			<i class="plus icon"></i>
+			</div>
+			<br />
 			<button class="ts button" id="random-next-button">random next song</button>
 			<div class="ts very narrow container segment">
 				Id:<div id="s-id"></div>
