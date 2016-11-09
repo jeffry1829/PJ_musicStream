@@ -150,8 +150,11 @@
 								if(!value.removed){ // if not removed
 									$('#s-list').append(' \
 											<div class="item s-list-item"> \
-												<div class="header">'+value.s_id+' '+value.s_name+'</div> \
-												'+value.s_t+'sec \
+												<img class="ts avatar image" src="'+value.cover_path+'"> \
+												<content> \
+													<div class="header">'+value.s_id+' '+value.s_name+'</div> \
+													'+value.s_t+'sec \
+												</content> \
 												<button class="ts icon button mini compact negative bilibili-item-remove"> \
 													<i class="icon remove"></i> \
 												</button> \
@@ -385,8 +388,7 @@
 			$('#s-artist').text('None');
 			$('#s-album').text('None');
 			$('#s-length').text(current.s_t);
-			$('#img-above-player').show();
-			$('#img-above-player').attr('src', current.cover_path);
+			$('#img-above-player').hide();
 		}
 		function LoadPlayer_wholeProcess(){
 			$.ajax({
