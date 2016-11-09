@@ -442,14 +442,20 @@
 							console.log('songs are not ready yet');
 							return;
 						}else{
-							if(res['s_id'] !== now_song_id){
+							if(res.s_id !== now_song_id){
 								LoadPlayer_wholeProcess();
 							}
-							if(res['y_url']){
+							if(res.y_url){
 								var y_player_t = y_player.getCurrentTime();
 								if(Math.abs(y_player_t - res.now_Len) > 5){
 									y_player.seekTo(res.now_Len, true);
 									y_player.playVideo();
+								}
+							}else if(res.b_av){
+								var player_t = $('#b-player')[0].currentTime;
+								if(Math.abs(player_t - res.now_Len) > 5){
+									$('#b-player')[0].currentTime = res.now_Len;
+									$('#b-player')[0].play();
 								}
 							}else{
 								var player_t = $('#player')[0].currentTime;
