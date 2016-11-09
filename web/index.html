@@ -53,7 +53,7 @@
 				url: domain+'/addBilibili',
 				dataType: 'json',
 				data: {
-					b_av: $(this).val()
+					b_av: Number($(this).val())
 				},
 				success: function(res){
 					// res doesn't matter
@@ -554,17 +554,17 @@
 			<button class="ts fluid bottom attached button" id="global-pause-button">Global Pause</button>
 		</div>
 		<div class="eleven wide column ts raised segment">
-			<div class="ts icon input">
+			<div class="ts icon input fluid">
     			<input type="text" placeholder="Please input youtube url"  id="y-url-input">
     			<i class="plus icon"></i>
 			</div>
 			<br />
-			<div class="ts icon input">
+			<div class="ts icon input fluid">
     			<input type="text" placeholder="Please input bilibili url"  id="b-av-input">
     			<i class="plus icon"></i>
 			</div>
 			<br />
-			<button class="ts button" id="random-next-button">random next song</button>
+			<button class="ts button fluid" id="random-next-button">random next song</button>
 			<div class="ts very narrow container segment">
 				Id:<div id="s-id"></div>
 				Title:<div id="s-title"></div>
