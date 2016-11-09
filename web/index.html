@@ -214,7 +214,7 @@
 				url: domain+'/removeBilibili',
 				dataType: 'json',
 				data: {
-					youtube_s_id: Number($(this).parent()[0].innerText.split(' ')[0])
+					bilibili_s_id: Number($(this).parent()[0].innerText.split(' ')[0])
 				},
 				success: function(res){
 					updateSongList();
