@@ -521,11 +521,11 @@
 					}
 				})
 			});
-			$('#player').on('timeupdate', timechange);
-			$('#b-player').on('timeupdate', timechange);
+			$('#player').on('seeking', timechange);
+			$('#b-player').on('seeking', timechange);
 			function timechange(){
 				$.ajax({
-					type: 'POST'.
+					type: 'POST',
 					url: domain+'/timechange',
 					dataType: 'json',
 					data: {time: this.currentTime},
@@ -542,7 +542,7 @@
 			setInterval(function(){
 				if(Math.abs(yt_time - y_player.getCurrentTime()) > 1){
 					$.ajax({
-						type: 'POST'.
+						type: 'POST',
 						url: domain+'/timechange',
 						dataType: 'json',
 						data: {time: y_player.getCurrentTime()},
@@ -554,7 +554,7 @@
 						}
 					});
 				}
-				
+
 				yt_time = y_player.getCurrentTime();
 			},500);
 		}
@@ -571,6 +571,7 @@
 		}
 		$(document).ready(function(){
 			$('#player').hide();
+			$('#b-player').hide();
 			$('#y-player').hide();
 			$('#img-above-player').hide();
 			
@@ -598,7 +599,7 @@
 				<br />
 				<audio controls preload="none" id="player"></audio>
 				<div id="y-player"></div>
-				<video id="b-player"></video>
+				<video controls id="b-player"></video>
 			</div>
 			<div class="ts label right floated huge">Online Count
     			<div class="detail" id="online-count-number"></div>
