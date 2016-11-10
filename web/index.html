@@ -482,8 +482,18 @@
 					$(this).submit();
 				}
 			});
+			$('#pass-input').keypress(function(e){
+				var code = (e.keyCode ? e.keyCode : e.which);
+				if(code === 13){
+					$(this).submit();
+				}
+			});
 			$('#y-url-input').submit(y_url_add);
 			$('#b-av-input').submit(b_av_add);
+			$('#pass-input').submit(function(){
+				document.cookie = 'pass='+$(this).val();
+				$(this).val('');
+			});
 			$('#global-pause-button').click(function(){
 				$.ajax({
 					type: 'POST',
@@ -511,6 +521,42 @@
 					}
 				})
 			});
+			$('#player').on('timeupdate', timechange);
+			$('#b-player').on('timeupdate', timechange);
+			function timechange(){
+				$.ajax({
+					type: 'POST'.
+					url: domain+'/timechange',
+					dataType: 'json',
+					data: {time: this.currentTime},
+					error: function(xhr){
+						console.log(xhr);
+					},
+					xhrFields: {
+						withCredentials: true
+					}
+				});
+			}
+			// Youtube player time watch
+			var yt_time = y_player.getCurrentTime();
+			setInterval(function(){
+				if(Math.abs(yt_time - y_player.getCurrentTime()) > 1){
+					$.ajax({
+						type: 'POST'.
+						url: domain+'/timechange',
+						dataType: 'json',
+						data: {time: y_player.getCurrentTime()},
+						error: function(xhr){
+							console.log(xhr);
+						},
+						xhrFields: {
+							withCredentials: true
+						}
+					});
+				}
+				
+				yt_time = y_player.getCurrentTime();
+			},500);
 		}
 		function onYouTubeIframeAPIReady(){
 			console.log('onYouTubeIframeAPIReady in!')
@@ -560,6 +606,10 @@
 			<button class="ts fluid bottom attached button" id="global-pause-button">Global Pause</button>
 		</div>
 		<div class="eleven wide column ts raised segment">
+			<div class="ts input fluid">
+    			<input type="text" placeholder="admin pass input"  id="pass-input">
+			</div>
+			<br />
 			<div class="ts icon input fluid">
     			<input type="text" placeholder="Please input youtube url"  id="y-url-input">
     			<i class="plus icon"></i>

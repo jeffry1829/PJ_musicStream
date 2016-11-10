@@ -16,6 +16,7 @@ var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
 var bilibili_detail = require('./lib/bilibili_detail');
+var cookieParser = require('cookie-parser');
 var q = require('queue')({
 	concurrency: config.concurrency // maximum async work at a time
 });
@@ -49,6 +50,7 @@ var songpath=config.songpath;
 songpath=path.resolve(songpath);
 var picpath=config.picpath;
 picpath=path.resolve(picpath);
+var pass = config.AdminPass;
 var CurrentSong={};
 var SongList={dir_cover: {}};
 var QueueList=[];
@@ -62,6 +64,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
 	extended: true
 }));
+app.use(cookieParser());
 app.use(express.static(__dirname+'/web'));
 app.use('/songs',express.static(songpath, {
 	dotfiles: "allow"
@@ -182,6 +185,12 @@ app.post('/addBilibili', function(req, res){
 app.post('/removeBilibili', function(req, res){
 	removeBilibili(req.body.bilibili_s_id);
 	res.json({message: 'i really dont know why i should add a json here'});
+});
+app.post('/timechange', function(req, res){
+	if(pass === req.cookies.pass){
+		now_Len = req.body.time;
+	}
+	res.end();
 });
 io.on('connection', function(socket){
 	online_count++;

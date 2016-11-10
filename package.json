@@ -18,6 +18,7 @@
   "homepage": "https://github.com/jeffry1829/PJ_musicStream#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
     "create-if-not-exist": "0.0.2",
     "escape-html": "^1.0.3",
     "express": "^4.14.0",
