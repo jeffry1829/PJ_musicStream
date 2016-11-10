@@ -540,7 +540,7 @@
 			// Youtube player time watch
 			var yt_time = y_player.getCurrentTime();
 			setInterval(function(){
-				if(Math.abs(yt_time - y_player.getCurrentTime()) > 1){
+				if(y_player.getCurrentTime() - yt_time > 1){
 					$.ajax({
 						type: 'POST',
 						url: domain+'/timechange',
