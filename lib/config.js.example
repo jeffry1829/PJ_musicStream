@@ -2,5 +2,6 @@ module.exports = {
 		songpath: './songs',
 		picpath: './cached_pics',
 		port: '3000',
-		concurrency: 30 // how many files can read at a time
+		concurrency: 30, //how many files can read a time
+		AdminPass: 'pass'
 }
