@@ -187,8 +187,6 @@ app.post('/removeBilibili', function(req, res){
 	res.json({message: 'i really dont know why i should add a json here'});
 });
 app.post('/timechange', function(req, res){
-	console.log('cookies');
-	console.log(req.cookies);
 	if(pass === req.cookies.pass){
 		CurrentSong.now_Len = req.body.time;
 	}
