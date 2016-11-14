@@ -409,6 +409,24 @@
 						}else{
 							setHTMLPlayer(res);
 						}
+						Notification.requestPermission().then(function(result) {
+							if (result === 'denied') {
+								console.log('Permission wasn\'t granted. Allow a retry.');
+								return;
+							}
+							if (result === 'default') {
+								console.log('The permission request was dismissed.');
+								return;
+							}
+							var n = new Notification('~Now Playing~', {
+								body: res.s_name,
+								icon: res.cover_path
+							});
+							n.onclick = function(){
+								n.close.bind(n)();
+							}
+							setTimeout(n.close.bind(n), 1000);
+						});
 					}
 				},
 				error: function(xhr){
