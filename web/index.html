@@ -253,7 +253,29 @@
 			*/
 			socket.emit('addQueue', Number($(this)[0].innerText.split(' ')[0]), -3); //There's no way to set start_time yet
 		}
+		function highlightSongs(queuelist){
+			var list = [];
+			queuelist.forEach(function(value, index){
+				list.push(value.s_id);
+			});
+			var $headers = $('.s-list-item .header');
+			$headers.parents('.item').removeClass('-thisqueue');
+			$headers.parents('.item').css('background-color', '');		
+			for(var i=0; i<$headers.length; i++){
+				if(list.indexOf(Number($headers[i].innerHTML.split(' ')[0])) !== -1){
+					if($($headers[i]).parents('.item').css('background-color') === '#FFFFBF'){
+						if(!$($headers[i]).parents('.item').hasClass('-thisqueue')){
+							$($headers[i]).parents('.item').css('background-color', '');
+						}
+					}else{
+						$($headers[i]).parents('.item').css('background-color', '#FFFFBF');
+						$($headers[i]).parents('.item').addClass('-thisqueue');						
+					}
+				}				
+			}
+		}
 		function updateQueueList(QueueList){
+			highlightSongs(QueueList);
 			$('#queue-list').empty();
 			QueueList.forEach(function(value, index){
 				$('#queue-list').append(' \
@@ -279,6 +301,7 @@
 				url: domain+'/getQueue',
 				dataType: 'json',
 				success: function(res){
+					highlightSongs(res);					
 					res.forEach(function(value, index){
 						$('#queue-list').append(' \
 							<div class="item queue-item" style="justify-content: center;"> \
