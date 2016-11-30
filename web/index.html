@@ -159,7 +159,7 @@
 													<div class="header">'+value.s_id+' '+value.s_name+'</div> \
 													'+value.s_t+'sec \
 												</content> \
-												<button class="ts icon button mini compact negative bilibili-item-remove"> \
+												<button class="ts icon button mini compact negative mp4-item-remove"> \
 													<i class="icon remove"></i> \
 												</button> \
 											</div> \
@@ -186,7 +186,7 @@
 					$('.type-img').nextUntil('.ts.massive.header').hide();
 					$('.s-list-item').click(s_list_item_click);
 					$('.youtube-item-remove').click(youtube_item_remove);
-					$('.bilibili-item-remove').click(mp4_item_remove);
+					$('.mp4-item-remove').click(mp4_item_remove);
 					$('.type-img').click(img_click);
 				},
 				error: function(xhr){
@@ -405,7 +405,7 @@
 					}else{
 						if(res.y_url){
 							setYTPlayer(res);
-						}else if(res.b_av){
+						}else if(res.mp4_url){
 							setMP4Player(res);
 						}else{
 							setHTMLPlayer(res);
@@ -469,7 +469,7 @@
 									y_player.seekTo(res.now_Len, true);
 									y_player.playVideo();
 								}
-							}else if(res.b_av){
+							}else if(res.mp4_url){
 								var player_t = $('#mp4-player')[0].currentTime;
 								if(Math.abs(player_t - res.now_Len) > 5){
 									$('#mp4-player')[0].currentTime = res.now_Len;
@@ -508,7 +508,7 @@
 				}
 			});
 			$('#y-url-input').submit(y_url_add);
-			$('#mp4-input').submit(b_av_add);
+			$('#mp4-input').submit(mp4_add);
 			$('#pass-input').submit(function(){
 				document.cookie = 'pass='+$(this).val();
 				$(this).val('');
