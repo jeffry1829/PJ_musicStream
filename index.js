@@ -15,7 +15,7 @@ var youtubeInfo = require('youtube-info');
 var createIfNotExist = require("create-if-not-exist");
 var escape = require('escape-html');
 var http = require('http');
-var bilibili_detail = require('./lib/bilibili_detail');
+var mp4_detail = require('./lib/mp4_detail');
 var cookieParser = require('cookie-parser');
 var q = require('queue')({
 	concurrency: config.concurrency // maximum async work at a time
@@ -38,9 +38,12 @@ var y_config = path.resolve('./y_config.json');
 createIfNotExist(y_config, '[]');
 var y_Ss = jsonfile.readFileSync(y_config) ? jsonfile.readFileSync(y_config) : []; // init stat
 
-var b_config = path.resolve('./b_config.json');
-createIfNotExist(b_config, '[]');
-var b_Ss = jsonfile.readFileSync(b_config) ? jsonfile.readFileSync(b_config) : [];
+/*
+	mp4_url: {mp4_url,title,img}
+*/
+var mp4_config = path.resolve('./mp4_config.json');
+createIfNotExist(mp4_config, '{}');
+var mp4_Ss = jsonfile.readFileSync(mp4_config) ? jsonfile.readFileSync(mp4_config) : {};
 
 var s_cache_path = path.resolve('./s_cache.json');
 createIfNotExist(s_cache_path, '{}');
@@ -156,34 +159,47 @@ app.post('/addYoutube', function(req, res){
 		});
 	}
 });
-app.post('/addBilibili', function(req, res){
-	var b_av = req.body.b_av;
-	if(b_Ss.indexOf(b_av) === -1){
-		b_Ss.push(b_av);
-		jsonfile.writeFileSync(b_config, b_Ss);
-		var b_detail = bilibili_detail(b_av); // Sync, may block(?)
-		if(b_detail instanceof Error){
-			console.log(b_detail.message);
-			console.log(b_detail.stack);
-			res.end();
-			return;
-		}else{
+app.post('/addMp4', function(req, res){
+	/*
+		req.body
+				.url
+				.title
+				.img [optional]
+
+		mp4_Ss = {mp4_url: {mp4_url,title,img}}
+	*/
+	var url = req.body.url;
+	var title = req.body.title;
+	var img = req.body.img;
+	if(!mp4_Ss[url]){
+		mp4_Ss[url] = {
+			title: title,
+			img: img ? img : undefined,
+			mp4_url: url
+		};
+		jsonfile.writeFileSync(mp4_config, mp4_Ss);
+		mp4_detail(url, function(err, json){
+			if(err){
+				console.log(err);
+				res.end();
+				return;
+				// if first 1MB and last 1MB can't get mp4 detail, then, i think its not a .mp4 file
+			}
 			SongList[tmp_s_no] = {
 				s_path: false,
-				s_name: escape(b_detail.title),
+				s_name: escape(title),
 				s_id: tmp_s_no++,
-				b_av: b_av,
-				s_t: b_detail.time,
-				s_type: 'Bilibili',
-				b_mp4: b_detail.mp4,
-				cover_path: b_detail.img
+				s_t: json.time,
+				s_type: 'MP4',
+				mp4_url: url,
+				cover_path: img === undefined ? img : '/songs/nocover.png'
 			};
 			res.json({message: 'why should i add json here'});
-		}
+		});
 	}
 });
-app.post('/removeBilibili', function(req, res){
-	removeBilibili(req.body.bilibili_s_id);
+app.post('/removeMp4', function(req, res){
+	removeMp4(req.body.mp4_s_id);
 	res.json({message: 'i really dont know why i should add a json here'});
 });
 app.post('/timechange', function(req, res){
@@ -223,10 +239,10 @@ function removeYoutube(youtube_s_id){
 	SongList[youtube_s_id].removed = true;
 	jsonfile.writeFileSync(y_config, y_Ss);
 }
-function removeBilibili(s_id){
-	b_Ss.splice(b_Ss.indexOf(SongList[s_id].b_av), 1);
+function removeMp4(s_id){
+	delete mp4_Ss[SongList[s_id].mp4_url];
 	SongList[s_id].removed = true;
-	jsonfile.writeFileSync(b_config, b_Ss);
+	jsonfile.writeFileSync(mp4_config, mp4_Ss);
 }
 function forcePlay(queue_index){
 	setCurrent(QueueList[queue_index].s_id, QueueList[queue_index].start_time);
@@ -278,7 +294,7 @@ function addQueue(s_id, start_time){
 	io.emit('QueueBeenSet', QueueList);
 }
 function s_reload(this_f_path){
-	loadBilibili(); // Sync
+	loadMp4(); // Sync
 	if(y_Ss.length>=1){
 		load_one_youtube(y_Ss, 0, this_f_path);
 	}else{
@@ -450,26 +466,26 @@ function hardsong_load(this_f_path){
 		});
 	});
 }
-function loadBilibili(){
-	b_Ss.forEach(function(b_av){
-		var b_detail = bilibili_detail(b_av); // Sync, may block(?)
-		if(b_detail instanceof Error){
-			console.log(b_detail.message);
-			console.log(b_detail.stack);
-			res.json(new Error('some error'));
-		}else{
+function loadMp4(){
+	for(var url in mp4_Ss){
+		mp4_detail(url, function(err, json){
+			if(err){
+				console.log(err);
+				res.end();
+				return;
+				// if first 1MB and last 1MB can't get mp4 detail, then, i think its not a .mp4 file
+			}
 			SongList[tmp_s_no] = {
 				s_path: false,
-				s_name: escape(b_detail.title),
+				s_name: escape(mp4_Ss[url].title),
 				s_id: tmp_s_no++,
-				b_av: b_av,
-				s_t: b_detail.time,
-				s_type: 'Bilibili',
-				b_mp4: b_detail.mp4,
-				cover_path: b_detail.img
+				s_t: json.time,
+				s_type: 'MP4',
+				mp4_url: url,
+				cover_path: mp4_Ss[url].img === undefined ? mp4_Ss[url].img : '/songs/nocover.png'
 			};
-		}
-	});
+		});
+	}
 }
 function START(){
 	s_reload(songpath);

@@ -32,7 +32,6 @@
     "recursive-readdir": "^2.0.0",
     "request": "^2.75.0",
     "socket.io": "^1.5.0",
-    "sync-request": "^3.0.1",
     "youtube-info": "^1.1.1"
   }
 }

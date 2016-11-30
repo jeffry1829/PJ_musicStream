@@ -47,17 +47,21 @@
 				}
 			})
 		}
-		function b_av_add(){
+		function mp4_add(){
 			$.ajax({
 				type: 'POST',
-				url: domain+'/addBilibili',
+				url: domain+'/addMp4',
 				dataType: 'json',
 				data: {
-					b_av: Number($(this).val())
+					url: Number($(this).val()),
+					title: $('#mp4-title').val(),
+					img: $('#mp4-img').val()
 				},
 				success: function(res){
 					// res doesn't matter
-					$('#b-av-input').val('')
+					$('#mp4-input').val('')
+					$('#mp4-title').val('')
+					$('#mp4-img').val('')
 					updateSongList(); 
 				},
 				error: function(xhr){
@@ -110,7 +114,7 @@
 						}
 					});
 					$.each(type_object, function(index, value){
-						if(index === 'Youtube' || index === 'Bilibili'){
+						if(index === 'Youtube' || index === 'MP4'){
 							$('#s-list').append(' \
 								<div class="ts massive header">'+index+'</div> \
 							');
@@ -142,7 +146,7 @@
 									');
 								}
 							});
-						}else if(index === 'Bilibili'){
+						}else if(index === 'MP4'){
 							$.each(value, function(index, value){
 								if(index === 'dir_cover'){
 									return;
@@ -179,10 +183,10 @@
 							});
 						}
 					});
-					$('.type-img').nextUntil('.ts.massive.header').hide()
+					$('.type-img').nextUntil('.ts.massive.header').hide();
 					$('.s-list-item').click(s_list_item_click);
 					$('.youtube-item-remove').click(youtube_item_remove);
-					$('.bilibili-item-remove').click(bilibili_item_remove);
+					$('.bilibili-item-remove').click(mp4_item_remove);
 					$('.type-img').click(img_click);
 				},
 				error: function(xhr){
@@ -207,14 +211,14 @@
 				}
 			});
 		}
-		function bilibili_item_remove(e){
+		function mp4_item_remove(e){
 			e.stopPropagation(); // only for remove button
 			$.ajax({
 				type: 'POST',
-				url: domain+'/removeBilibili',
+				url: domain+'/removeMp4',
 				dataType: 'json',
 				data: {
-					bilibili_s_id: Number($(this).parent()[0].innerText.split(' ')[0])
+					mp4_s_id: Number($(this).parent()[0].innerText.split(' ')[0])
 				},
 				success: function(res){
 					updateSongList();
@@ -225,32 +229,6 @@
 			});
 		}
 		function s_list_item_click(){
-			/*
-			console.log('inner s-list-item clicked event => $(this)');
-			console.log($(this))
-			console.log('inner s-list-item clicked event => $(this).val()');
-			console.log($(this).val())
-			console.log('inner s-list-item clicked event => $(this)[0].innerText');
-			console.log($(this)[0].innerText) //this is ok
-			console.log('inner s-list-item clicked event => Number($(this)[0].innerText.split(\' \')[0])');
-			console.log(Number($(this)[0].innerText.split(' ')[0]))
-			
-			$.ajax({
-				type: 'POST',
-				url: domain+'/addQueue',
-				dataType: 'json',
-				data: {
-					s_id: Number($(this)[0].innerText.split(' ')[0]),
-					start_time: -3 //There's no way to set yet
-				},
-				success: function(res){
-					//doesn't matter
-				},
-				error: function(xhr){
-					console.log(xhr);
-				}
-			});
-			*/
 			socket.emit('addQueue', Number($(this)[0].innerText.split(' ')[0]), -3); //There's no way to set start_time yet
 		}
 		function highlightSongs(queuelist){
@@ -362,8 +340,8 @@
 			y_player.pauseVideo();
 			$('#player').show();
 			$('#y-player').hide();
-			$('#b-player')[0].pause();
-			$('#b-player').hide();
+			$('#mp4-player')[0].pause();
+			$('#mp4-player').hide();
 			$('#player').attr('src', current.s_url);
 			$('#player')[0].currentTime = current.now_Len;
 			$('#player')[0].play();
@@ -380,8 +358,8 @@
 		function setYTPlayer(current){ // getCurrent Object
 			$('#player')[0].pause();
 			$('#player').hide();
-			$('#b-player')[0].pause();
-			$('#b-player').hide();
+			$('#mp4-player')[0].pause();
+			$('#mp4-player').hide();
 			$('#y-player').show();
 			y_player.loadVideoById(current['y_id'], current.now_Len, 'low');
 			y_player.seekTo(current.now_Len, true);
@@ -395,16 +373,16 @@
 			$('#s-length').text(current.s_t);
 			$('#img-above-player').hide();
 		}
-		function setBIPlayer(current){
+		function setMP4Player(current){
 			y_player.pauseVideo();
 			$('#player')[0].pause();
 			$('#player').hide();
 			$('#y-player').hide();
-			$('#b-player').show();
-			$('#b-player').attr('src', current.b_mp4);
-			$('#b-player')[0].currentTime = current.now_Len;
-			$('#b-player')[0].play();
-			$('#b-player')[0].volume = volume;
+			$('#mp4-player').show();
+			$('#mp4-player').attr('src', current.mp4_url);
+			$('#mp4-player')[0].currentTime = current.now_Len;
+			$('#mp4-player')[0].play();
+			$('#mp4-player')[0].volume = volume;
 			now_song_id=current.s_id
 			$('#s-id').text(current.s_id);
 			$('#s-title').text(unescape(current.s_name));
@@ -428,7 +406,7 @@
 						if(res.y_url){
 							setYTPlayer(res);
 						}else if(res.b_av){
-							setBIPlayer(res);
+							setMP4Player(res);
 						}else{
 							setHTMLPlayer(res);
 						}
@@ -492,10 +470,10 @@
 									y_player.playVideo();
 								}
 							}else if(res.b_av){
-								var player_t = $('#b-player')[0].currentTime;
+								var player_t = $('#mp4-player')[0].currentTime;
 								if(Math.abs(player_t - res.now_Len) > 5){
-									$('#b-player')[0].currentTime = res.now_Len;
-									$('#b-player')[0].play();
+									$('#mp4-player')[0].currentTime = res.now_Len;
+									$('#mp4-player')[0].play();
 								}
 							}else{
 								var player_t = $('#player')[0].currentTime;
@@ -517,7 +495,7 @@
 					$(this).submit();
 				}
 			});
-			$('#b-av-input').keypress(function(e){
+			$('#mp4-input').keypress(function(e){
 				var code = (e.keyCode ? e.keyCode : e.which);
 				if(code === 13){
 					$(this).submit();
@@ -530,7 +508,7 @@
 				}
 			});
 			$('#y-url-input').submit(y_url_add);
-			$('#b-av-input').submit(b_av_add);
+			$('#mp4-input').submit(b_av_add);
 			$('#pass-input').submit(function(){
 				document.cookie = 'pass='+$(this).val();
 				$(this).val('');
@@ -551,7 +529,7 @@
 					error: function(xhr){
 						console.log(xhr);
 					}
-				})
+				});
 			});
 			$('#random-next-button').click(function(){
 				$.ajax({
@@ -560,10 +538,10 @@
 					error: function(xhr){
 						console.log(xhr);
 					}
-				})
+				});
 			});
 			$('#player').on('seeking', timechange);
-			$('#b-player').on('seeking', timechange);
+			$('#mp4-player').on('seeking', timechange);
 			function timechange(){
 				$.ajax({
 					type: 'POST',
@@ -612,7 +590,7 @@
 		}
 		$(document).ready(function(){
 			$('#player').hide();
-			$('#b-player').hide();
+			$('#mp4-player').hide();
 			$('#y-player').hide();
 			$('#img-above-player').hide();
 			
@@ -640,7 +618,7 @@
 				<br />
 				<audio controls preload="none" id="player"></audio>
 				<div id="y-player"></div>
-				<video controls id="b-player"></video>
+				<video controls id="mp4-player"></video>
 			</div>
 			<div class="ts label right floated huge">Online Count
     			<div class="detail" id="online-count-number"></div>
@@ -658,8 +636,14 @@
 			</div>
 			<br />
 			<div class="ts icon input fluid">
-    			<input type="text" placeholder="Please input bilibili url"  id="b-av-input">
+    			<input type="text" placeholder="Please input mp4 url"  id="mp4-input">
     			<i class="plus icon"></i>
+			</div>
+			<div class="ts input fluid">
+    			<input type="text" placeholder="Please input mp4 title"  id="mp4-title">
+			</div>
+			<div class="ts input fluid">
+    			<input type="text" placeholder="Please input mp4 img url" id="mp4-img">
 			</div>
 			<br />
 			<button class="ts button fluid" id="random-next-button">random next song</button>
