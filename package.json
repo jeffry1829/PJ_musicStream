@@ -27,6 +27,7 @@
     "jsmediatags": "^3.3.0",
     "jsonfile": "^2.4.0",
     "mp3-duration": "^1.0.10",
+    "online_mp4_duration": "^2.0.6",
     "query-string": "^4.2.3",
     "queue": "^4.0.0",
     "recursive-readdir": "^2.0.0",

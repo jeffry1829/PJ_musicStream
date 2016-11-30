@@ -53,7 +53,7 @@
 				url: domain+'/addMp4',
 				dataType: 'json',
 				data: {
-					url: Number($(this).val()),
+					url: $(this).val(),
 					title: $('#mp4-title').val(),
 					img: $('#mp4-img').val()
 				},
@@ -119,11 +119,10 @@
 								<div class="ts massive header">'+index+'</div> \
 							');
 						}else{
-							// NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! wait for new version tocas-ui image link
 							$('#s-list').append(' \
 								<div class="ts massive header">'+index+'</div> \
 								<a class="type-img"> \
-									<img class="ts small image" src="'+value.dir_cover+'"></img> \
+									<img class="ts link small image" src="'+value.dir_cover+'"></img> \
 								</a> \
 							');
 						}
