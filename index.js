@@ -495,9 +495,7 @@ function loadMp4() {
         mp4_detail(url, function(err, json) {
             if (err) {
                 console.log(err);
-                res.end();
                 return;
-                // if first 1MB and last 1MB can't get mp4 detail, then, i think its not a .mp4 file
             }
             SongList[tmp_s_no] = {
                 s_path: false,
